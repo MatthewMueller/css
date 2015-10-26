@@ -3,6 +3,13 @@
   "version": "0.0.0",
   "description": "a mako plugin for assembling css files and their linked assets",
   "repository": "makojs/css",
+  "dependencies": {
+    "array-without": "0.0.2",
+    "defaults": "^1.0.3",
+    "duo-pack": "^3.0.5",
+    "file-deps": "0.0.7",
+    "resolve": "^1.1.6"
+  },
   "devDependencies": {
     "@dominicbarnes/eslint-config": "*",
     "@dominicbarnes/eslint-config-node": "*",
@@ -13,19 +20,12 @@
     "eslint-plugin-require-path-exists": "^1.0.15",
     "mako": "^0.1.0",
     "mako-stat": "0.0.1",
-    "mako-text": "0.0.1",
+    "mako-text": "^0.1.0",
     "mocha": "^2.3.0"
   },
   "scripts": {
     "lint": "eslint .",
     "pretest": "npm run lint",
     "test": "mocha"
-  },
-  "dependencies": {
-    "array-without": "0.0.2",
-    "defaults": "^1.0.3",
-    "duo-pack": "^3.0.5",
-    "file-deps": "0.0.7",
-    "resolve": "^1.1.6"
   }
 }
