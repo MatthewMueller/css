@@ -1,7 +1,7 @@
 # mako-css
 
-> A mako plugin for working with CSS. In addition to bundling the CSS together, it also handles
-> copying the assets (such as images and fonts) as well.
+> A mako plugin for working with CSS, using npm as a package manager. In addition to bundling the
+> CSS together, it also handles copying the assets (such as images and fonts) as well.
 
 [![npm version](https://img.shields.io/npm/v/mako-css.svg)](https://www.npmjs.com/package/mako-css)
 [![npm dependencies](https://img.shields.io/david/makojs/css.svg)](https://david-dm.org/makojs/css)
@@ -63,8 +63,8 @@ Create a new plugin instance, with the following `options` available:
 
 ## Effects
 
-During **analyze**, this will parse CSS files for `@import` statements and `url(...)` links that
-are used to resolve dependencies.
+During **analyze**, this will parse CSS files for `@import` statements and `url(...)` links, which
+will be resolved via [resolve](https://www.npmjs.com/package/resolve).
 
 During **build**, each _entry_ CSS file will have all of it's dependencies bundled into a single
 file. Along the way, those dependencies will be _removed_ from the tree, leaving only the output
