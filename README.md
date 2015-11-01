@@ -4,6 +4,11 @@
 while maintaining links to external assets like images and fonts.
 (example: [duo](http://duojs.org/))
 
+[![npm version](https://img.shields.io/npm/v/mako-css.svg)](https://www.npmjs.com/package/mako-css)
+[![npm dependencies](https://img.shields.io/david/makojs/css.svg)](https://david-dm.org/makojs/css)
+[![npm dev dependencies](https://img.shields.io/david/dev/makojs/css.svg)](https://david-dm.org/makojs/css#info=devDependencies)
+[![build status](https://img.shields.io/travis/makojs/css.svg)](https://travis-ci.org/makojs/css)
+
 ## Usage
 
 ```js
