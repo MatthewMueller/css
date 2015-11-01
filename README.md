@@ -1,8 +1,7 @@
 # mako-css
 
-> A mako plugin that bundles a collection of CSS files into a single output file,
-while maintaining links to external assets like images and fonts.
-(example: [duo](http://duojs.org/))
+> A mako plugin for working with CSS. In addition to bundling the CSS together, it also handles
+> copying the assets (such as images and fonts) as well.
 
 [![npm version](https://img.shields.io/npm/v/mako-css.svg)](https://www.npmjs.com/package/mako-css)
 [![npm dependencies](https://img.shields.io/david/makojs/css.svg)](https://david-dm.org/makojs/css)
@@ -11,19 +10,42 @@ while maintaining links to external assets like images and fonts.
 
 ## Usage
 
+This aims to be the complement to [mako-js](https://github.com/makojs/js), allowing npm packages
+with CSS, images, fonts, and other assets to also be consumed just like JS files:
+
+```css
+/* local dependency: ./lib/index.css */
+@import "./lib";
+
+/* installed dependency: node_modules/my-module/index.css */
+@import "my-module";
+```
+
+Given the entry CSS files, it will bundle the entire dependency tree into a single output CSS file.
+The assets it discovers along the way are also copied, automatically rewriting the URLs when
+necessary.
+
 ```js
 var mako = require('mako');
-var stat = require('mako-stat');
 var text = require('mako-text');
 var css = require('mako-css');
+var path = require('path');
+
+var entry = path.resolve('./index.css');
 
 mako()
-  .use(stat([ 'css' /* other image/font extensions */ ]))
-  .use(text([ 'css' /* other image/font extensions */ ]))
+  // read CSS files as text
+  .use(text([ 'css' ]))
+  // adds the CSS plugin
   .use(css())
-  .build('./index.css')
-  .then(function () {
-    // done!
+  // runs the build
+  .build(entry)
+  // returns a promise
+  .then(function (tree) {
+    var file = tree.getFile(entry);
+    console.log(file.contents);
+    // the combined CSS file
+    // the tree also has any linked assets contained
   });
 ```
 
@@ -33,7 +55,7 @@ mako()
 
 Create a new plugin instance, with the following `options` available:
 
- - `root` the root for the project, paths will be set relative to here (default: `pwd`)
+ - `root` the root for the project, paths will be set relative to here (default: `process.cwd()`)
 
 ## Dependencies
 
@@ -41,10 +63,10 @@ Create a new plugin instance, with the following `options` available:
 
 ## Effects
 
-During analyze, this will parse CSS files for `@import` statements and `url(...)` links that are used to resolve dependencies.
+During **analyze**, this will parse CSS files for `@import` statements and `url(...)` links that
+are used to resolve dependencies.
 
-During build, each entry CSS file will be bundled into a single output file, all the CSS dependencies will be pruned from the build tree. Other linked assets, such as images and fonts, will be set as dependencies of each linked entry file. (so they will be handled during write)
-
-## Use-Cases
-
-This seeks to accomplish what build tools like Duo and Browserify do for front-end workflows.
+During **build**, each _entry_ CSS file will have all of it's dependencies bundled into a single
+file. Along the way, those dependencies will be _removed_ from the tree, leaving only the output
+files behind. The assets, however, will remain in the tree, with their link being moved to the
+entry files that use them.
