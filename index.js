@@ -21,16 +21,13 @@ module.exports = function (options) {
   let config = defaults(options, { root: process.cwd() });
 
   return function (mako) {
-    let css = mako.extensions('css', [ 'css' ]);
-    let assets = [
-      mako.extensions('images', [ 'bmp', 'gif', 'jpg', 'jpeg', 'png', 'svg' ]),
-      mako.extensions('fonts', [ 'eot', 'otf', 'ttf', 'woff' ])
-    ];
+    let images = [ 'bmp', 'gif', 'jpg', 'jpeg', 'png', 'svg' ];
+    let fonts = [ 'eot', 'otf', 'ttf', 'woff' ];
 
-    mako.postread([ css, assets ], relative);
+    mako.postread([ 'css', images, fonts ], relative);
     mako.dependencies('css', npm);
     mako.postdependencies('css', combine);
-    mako.postdependencies(assets, move);
+    mako.postdependencies([ images, fonts ], move);
     mako.prewrite('css', pack);
   };
 
@@ -52,9 +49,8 @@ module.exports = function (options) {
    * @param {Builder} mako  The mako builder instance.
    * @return {Promise}
    */
-  function npm(file, tree, mako) {
+  function npm(file) {
     let basedir = path.dirname(file.path);
-    let extensions = mako.extensions('css').map(ext => `.${ext}`);
 
     file.deps = Object.create(null);
     if (file.isEntry()) file.mapping = Object.create(null);
@@ -63,7 +59,7 @@ module.exports = function (options) {
       return new Promise(function (accept, reject) {
         let options = {
           basedir: basedir,
-          extensions: extensions
+          extensions: [ '.css' ]
         };
 
         resolve(dep, options, function (err, res, pkg) {
@@ -94,6 +90,8 @@ module.exports = function (options) {
     file.dependants().forEach(function (parent) {
       tree.removeDependency(parent, file.path);
     });
+
+    if (!file.isEntry()) tree.removeFile(file.path);
   }
 
   /**
