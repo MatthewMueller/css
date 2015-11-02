@@ -57,6 +57,16 @@ Create a new plugin instance, with the following `options` available:
 
  - `root` the root for the project, paths will be set relative to here (default: `process.cwd()`)
 
+### css.images
+
+An `Array` of extensions for image files that this plugin will interact with. You can add to this
+array directly, but for core support of other types, please open an issue.
+
+### css.fonts
+
+An `Array` of extensions for font files that this plugin will interact with. You can add to this
+array directly, but for core support of other types, please open an issue.
+
 ## Dependencies
 
  - a read plugin for `css` extensions that has populated `file.contents` with a string

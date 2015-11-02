@@ -8,6 +8,13 @@ let path = require('path');
 let resolve = require('resolve');
 let without = require('array-without');
 
+// export the plugin fn as the primary export
+exports = module.exports = plugin;
+
+// add the images/fonts extensions lists as secondary exports
+exports.images = [ 'bmp', 'gif', 'jpg', 'jpeg', 'png', 'svg' ];
+exports.fonts = [ 'eot', 'otf', 'ttf', 'woff' ];
+
 /**
  * Initialize the mako js plugin.
  *
@@ -17,17 +24,14 @@ let without = require('array-without');
  * @param {Object} options  Configuration.
  * @return {Function}
  */
-module.exports = function (options) {
+function plugin(options) {
   let config = defaults(options, { root: process.cwd() });
 
   return function (mako) {
-    let images = [ 'bmp', 'gif', 'jpg', 'jpeg', 'png', 'svg' ];
-    let fonts = [ 'eot', 'otf', 'ttf', 'woff' ];
-
-    mako.postread([ 'css', images, fonts ], relative);
+    mako.postread([ 'css', plugin.images, plugin.fonts ], relative);
     mako.dependencies('css', npm);
     mako.postdependencies('css', combine);
-    mako.postdependencies([ images, fonts ], move);
+    mako.postdependencies([ plugin.images, plugin.fonts ], move);
     mako.prewrite('css', pack);
   };
 
@@ -144,4 +148,4 @@ module.exports = function (options) {
     file.contents = results.code;
     // TODO: sourcemaps
   }
-};
+}
