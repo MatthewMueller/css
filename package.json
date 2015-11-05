@@ -2,6 +2,10 @@
   "name": "mako-css",
   "version": "0.0.2",
   "description": "a mako plugin for assembling css files and their linked assets",
+  "keywords": [
+    "mako",
+    "plugin"
+  ],
   "repository": "makojs/css",
   "license": "MIT",
   "dependencies": {
