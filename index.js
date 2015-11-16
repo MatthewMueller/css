@@ -5,7 +5,7 @@ let defaults = require('defaults');
 let deps = require('file-deps');
 let Pack = require('duo-pack');
 let path = require('path');
-let resolve = require('resolve');
+let resolve = require('browser-resolve');
 let without = require('array-without');
 
 // export the plugin fn as the primary export
@@ -54,15 +54,13 @@ function plugin(options) {
    * @return {Promise}
    */
   function npm(file) {
-    let basedir = path.dirname(file.path);
-
     file.deps = Object.create(null);
     if (file.isEntry()) file.mapping = Object.create(null);
 
     return Promise.all(deps(file.contents, 'css').map(function (dep) {
       return new Promise(function (accept, reject) {
         let options = {
-          basedir: basedir,
+          filename: file.path,
           extensions: [ '.css' ]
         };
 
