@@ -6,6 +6,7 @@ let deps = require('file-deps');
 let Pack = require('duo-pack');
 let path = require('path');
 let resolve = require('browser-resolve');
+let strip = require('strip-extension');
 let without = require('array-without');
 
 // export the plugin fn as the primary export
@@ -61,7 +62,8 @@ function plugin(options) {
       return new Promise(function (accept, reject) {
         let options = {
           filename: file.path,
-          extensions: [ '.css' ]
+          extensions: [ '.css' ],
+          packageFilter: packageFilter
         };
 
         resolve(dep, options, function (err, res, pkg) {
@@ -146,4 +148,9 @@ function plugin(options) {
     file.contents = results.code;
     // TODO: sourcemaps
   }
+}
+
+function packageFilter(pkg) {
+  if (pkg.main) pkg.main = strip(pkg.main);
+  return pkg;
 }

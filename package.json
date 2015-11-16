@@ -13,7 +13,8 @@
     "browser-resolve": "^1.10.1",
     "defaults": "^1.0.3",
     "duo-pack": "^3.0.5",
-    "file-deps": "0.0.7"
+    "file-deps": "0.0.7",
+    "strip-extension": "^1.1.0"
   },
   "peerDependencies": {
     "mako": "^0.2.0"

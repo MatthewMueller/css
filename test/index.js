@@ -68,6 +68,18 @@ describe('css plugin', function () {
       });
   });
 
+  it('should properly resolve css even when modules specify a main js', function () {
+    let entry = fixture('modules-with-js/index.css');
+
+    return mako()
+      .use(plugins)
+      .build(entry)
+      .then(function (tree) {
+        let file = tree.getFile(entry);
+        assert.strictEqual(file.contents, expected('modules-with-js'));
+      });
+  });
+
   it('should find assets linked to the entry file', function () {
     let entry = fixture('assets/index.css');
     let asset = fixture('assets/texture.png');
