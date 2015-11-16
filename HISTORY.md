@@ -1,4 +1,9 @@
 
+0.1.1 / 2015-11-16
+==================
+
+  * fixing issue with modules that specify a js main
+
 0.1.0 / 2015-11-15
 ==================
 
