@@ -58,7 +58,14 @@ function plugin(options) {
     file.deps = Object.create(null);
     if (file.isEntry()) file.mapping = Object.create(null);
 
-    return Promise.all(deps(file.contents, 'css').map(function (dep) {
+    // ignore data and http deps
+    var dependencies = deps(file.contents, 'css').filter(function (dep) {
+      var protocol = dep.slice(0, 4);
+      return protocol !== 'http'
+          && protocol !== 'data';
+    });
+
+    return Promise.all(dependencies.map(function (dep) {
       return new Promise(function (accept, reject) {
         let options = {
           filename: file.path,
@@ -150,6 +157,12 @@ function plugin(options) {
   }
 }
 
+/**
+ * Filter out the "main" filed
+ *
+ * @param {Object} pkg package object
+ * @return {Object}
+ */
 function packageFilter(pkg) {
   if (pkg.main) pkg.main = strip(pkg.main);
   return pkg;

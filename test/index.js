@@ -105,12 +105,46 @@ describe('css plugin', function () {
         assert.isTrue(tree.hasDependency(entry, asset));
       });
   });
+
+  it('url(http://...) should work', function () {
+    let entry = fixture('http/index.css');
+    return mako()
+      .use(plugins)
+      .build(entry)
+      .then(function (tree) {
+        let file = tree.getFile(entry);
+        assert.strictEqual(file.contents, expected('http'));
+      });
+  });
+
+  it('url(data:...) should work', function () {
+    let entry = fixture('datauri/index.css');
+    return mako()
+      .use(plugins)
+      .build(entry)
+      .then(function (tree) {
+        let file = tree.getFile(entry);
+        assert.strictEqual(file.contents, expected('datauri'));
+      });
+  });
 });
 
+/**
+ * Read fixture
+ *
+ * @param  {path} path file path
+ * @return {String}
+ */
 function read(path) {
   return fs.readFileSync(path, 'utf8');
 }
 
+/**
+ * Read the expected
+ *
+ * @param  {String} name fixture name
+ * @return {String}
+ */
 function expected(name) {
   return read(fixture(name, 'expected.css'));
 }
