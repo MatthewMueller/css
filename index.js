@@ -3,6 +3,8 @@
 
 let defaults = require('defaults');
 let deps = require('file-deps');
+let isUrl = require('is-url');
+let isDataUri = require('is-datauri');
 let Pack = require('duo-pack');
 let path = require('path');
 let resolve = require('browser-resolve');
@@ -58,12 +60,8 @@ function plugin(options) {
     file.deps = Object.create(null);
     if (file.isEntry()) file.mapping = Object.create(null);
 
-    // ignore data and http deps
-    var dependencies = deps(file.contents, 'css').filter(function (dep) {
-      var protocol = dep.slice(0, 4);
-      return protocol !== 'http'
-          && protocol !== 'data';
-    });
+    // find the list of refs, ignore any absolute urls or data-urls
+    var dependencies = deps(file.contents, 'css').filter(relativeRef);
 
     return Promise.all(dependencies.map(function (dep) {
       return new Promise(function (accept, reject) {
@@ -166,4 +164,15 @@ function plugin(options) {
 function packageFilter(pkg) {
   if (pkg.main) pkg.main = strip(pkg.main);
   return pkg;
+}
+
+/**
+ * Used to filter out import/urls that should not be handled.
+ * (ie: absolute urls and data-uris)
+ *
+ * @param {String} ref  The reference to examine.
+ * @return {Boolean}
+ */
+function relativeRef(ref) {
+  return !isUrl(ref) && !isDataUri(ref);
 }

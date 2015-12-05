@@ -14,6 +14,8 @@
     "defaults": "^1.0.3",
     "duo-pack": "^3.0.5",
     "file-deps": "0.0.11",
+    "is-datauri": "^0.1.0",
+    "is-url": "^1.2.1",
     "strip-extension": "^1.1.0"
   },
   "peerDependencies": {

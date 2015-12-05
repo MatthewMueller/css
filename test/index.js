@@ -106,7 +106,7 @@ describe('css plugin', function () {
       });
   });
 
-  it('url(http://...) should work', function () {
+  it('should ignore absoulte urls', function () {
     let entry = fixture('http/index.css');
     return mako()
       .use(plugins)
@@ -117,7 +117,7 @@ describe('css plugin', function () {
       });
   });
 
-  it('url(data:...) should work', function () {
+  it('should ignore data-uris', function () {
     let entry = fixture('datauri/index.css');
     return mako()
       .use(plugins)
