@@ -11,6 +11,8 @@ let resolve = require('browser-resolve');
 let strip = require('strip-extension');
 let without = require('array-without');
 
+const mappings = new WeakMap();
+
 // export the plugin fn as the primary export
 exports = module.exports = plugin;
 
@@ -58,7 +60,6 @@ function plugin(options) {
    */
   function npm(file) {
     file.deps = Object.create(null);
-    if (file.isEntry()) file.mapping = Object.create(null);
 
     // find the list of refs, ignore any absolute urls or data-urls
     var dependencies = deps(file.contents, 'css').filter(relativeRef);
@@ -83,24 +84,26 @@ function plugin(options) {
   }
 
   /**
-   * Mako prewrite hook that packs all JS entry files into a single file. (also
-   * removes all dependencies from the build tree)
+   * Mako prewrite hook that rolls up all the CSS files into the root files.
+   * (also removes all dependencies from the build tree)
    *
-   * @param {File} file     The current file being processed.
-   * @param {Tree} tree     The build tree.
+   * @param {File} file  The current file being processed.
+   * @param {Tree} tree  The build tree.
    */
   function combine(file, tree) {
-    // add to the mapping for any linked entry files
-    tree.getEntries(file.path).forEach(function (entry) {
-      tree.getFile(entry).mapping[file.id] = prepare(file);
+    let mapping = getMapping(tree);
+    let remove = !isRoot(file);
+
+    // add this file to the mapping
+    mapping[file.id] = prepare(file);
+
+    // remove each dependant link
+    file.dependants().forEach(function (dep) {
+      tree.removeDependency(dep, file.path);
     });
 
-    // move these dependency links to the entry file
-    file.dependants().forEach(function (parent) {
-      tree.removeDependency(parent, file.path);
-    });
-
-    if (!file.isEntry()) tree.removeFile(file.path);
+    // unless this file is a root, remove it from the tree
+    if (remove) tree.removeFile(file.path);
   }
 
   /**
@@ -112,17 +115,20 @@ function plugin(options) {
    * @param {Tree} tree  The build tree.
    */
   function move(file, tree) {
-    let entries = tree.getEntries(file.path);
+    let mapping = getMapping(tree);
+    let roots = findRoots(file);
 
-    // add to the mapping for any linked entry files
-    entries.forEach(function (entry) {
-      tree.getFile(entry).mapping[file.id] = prepare(file);
-      tree.addDependency(entry, file.path);
+    // add this file to the mapping
+    mapping[file.id] = prepare(file);
+
+    // attach this file to each possible root
+    roots.forEach(function (root) {
+      tree.addDependency(root, file.path);
     });
 
-    // move these dependency links to the entry file
-    without(file.dependants(), entries).forEach(function (parent) {
-      tree.removeDependency(parent, file.path);
+    // remove the link from the original dependants
+    without(file.dependants(), roots).forEach(function (dep) {
+      tree.removeDependency(dep, file.path);
     });
   }
 
@@ -146,9 +152,11 @@ function plugin(options) {
    * Transform the actual file code via duo-pack.
    *
    * @param {File} file  The current file being processed.
+   * @param {Tree} tree  The build tree.
    */
-  function pack(file) {
-    let pack = new Pack(file.mapping);
+  function pack(file, tree) {
+    let mapping = getMapping(tree);
+    let pack = new Pack(mapping);
     let results = pack.pack(file.id);
     file.contents = results.code;
     // TODO: sourcemaps
@@ -175,4 +183,57 @@ function packageFilter(pkg) {
  */
 function relativeRef(ref) {
   return !isUrl(ref) && !isDataUri(ref);
+}
+
+/**
+ * Retrieve the mapping for this build tree, create one if necessary.
+ *
+ * @param {Tree} tree  The build tree to use as the key.
+ * @return {Object}
+ */
+function getMapping(tree) {
+  if (!mappings.has(tree)) {
+    mappings.set(tree, Object.create(null));
+  }
+
+  return mappings.get(tree);
+}
+
+/**
+ * Determine if a CSS file is at the root of a dependency chain. (allows for
+ * non-CSS dependants, such as HTML)
+ *
+ * @param {File} file  The file to examine.
+ * @return {Boolean}
+ */
+function isRoot(file) {
+  // short-circuit, an entry file is automatically considered a root
+  if (file.entry) return true;
+
+  let tree = file.tree;
+
+  // if there are no dependants, this is assumed to be a root (this could
+  // possibly be inferred from file.entry)
+  let dependants = file.dependants();
+  if (dependants.length === 0) return true;
+
+  // if any of the dependants are not css, (ie: html) this is a root.
+  // TODO: support other file types (eg: less, sass, styl)
+  return dependants.some(function (dependant) {
+    return tree.getFile(dependant).type !== 'css';
+  });
+}
+
+/**
+ * Helper for finding the available roots reachable from a dependency file.
+ *
+ * @param {File} file  The file to search from.
+ * @return {Array}
+ */
+function findRoots(file) {
+  let tree = file.tree;
+  return file.dependants(true).filter(function (dep) {
+    let file = tree.getFile(dep);
+    return isRoot(file);
+  });
 }

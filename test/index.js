@@ -127,6 +127,33 @@ describe('css plugin', function () {
         assert.strictEqual(file.contents, expected('datauri'));
       });
   });
+
+  it('should build from entries that are not CSS', function () {
+    let entry = fixture('subentries/index.txt');
+    let css = fixture('subentries/index.css');
+
+    return mako()
+      .use(text([ 'txt' ]))
+      .use(parseText)
+      .use(plugins)
+      .build(entry)
+      .then(function (tree) {
+        let file = tree.getFile(css);
+        assert.strictEqual(file.contents, expected('subentries'));
+      });
+
+    /**
+     * parse test plugin
+     *
+     * @param {Mako} mako mako object
+     */
+    function parseText(mako) {
+      mako.dependencies('txt', function (file) {
+        var filepath = path.resolve(path.dirname(file.path), file.contents.trim());
+        file.addDependency(filepath);
+      });
+    }
+  });
 });
 
 /**
