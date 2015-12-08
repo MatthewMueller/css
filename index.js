@@ -210,18 +210,14 @@ function isRoot(file) {
   // short-circuit, an entry file is automatically considered a root
   if (file.entry) return true;
 
-  let tree = file.tree;
-
   // if there are no dependants, this is assumed to be a root (this could
   // possibly be inferred from file.entry)
-  let dependants = file.dependants();
+  let dependants = file.dependants({ objects: true });
   if (dependants.length === 0) return true;
 
   // if any of the dependants are not css, (ie: html) this is a root.
   // TODO: support other file types (eg: less, sass, styl)
-  return dependants.some(function (dependant) {
-    return tree.getFile(dependant).type !== 'css';
-  });
+  return dependants.some(file => file.type !== 'css');
 }
 
 /**
@@ -231,9 +227,7 @@ function isRoot(file) {
  * @return {Array}
  */
 function findRoots(file) {
-  let tree = file.tree;
-  return file.dependants(true).filter(function (dep) {
-    let file = tree.getFile(dep);
-    return isRoot(file);
-  });
+  return file.dependants({ recursive: true, objects: true })
+    .filter(file => isRoot(file))
+    .map(file => file.path);
 }
