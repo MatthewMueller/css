@@ -3,6 +3,7 @@
 
 let defaults = require('defaults');
 let deps = require('file-deps');
+let flatten = require('array-flatten');
 let isUrl = require('is-url');
 let isDataUri = require('is-datauri');
 let Pack = require('duo-pack');
@@ -30,7 +31,10 @@ exports.fonts = [ 'eot', 'otf', 'ttf', 'woff' ];
  * @return {Function}
  */
 function plugin(options) {
-  let config = defaults(options, { root: process.cwd() });
+  let config = defaults(options, {
+    root: process.cwd(),
+    extensions: []
+  });
 
   return function (mako) {
     mako.predependencies([ 'css', plugin.images, plugin.fonts ], relative);
@@ -68,7 +72,7 @@ function plugin(options) {
       return new Promise(function (accept, reject) {
         let options = {
           filename: file.path,
-          extensions: [ '.css' ],
+          extensions: flatten([ '.css', config.extensions ]),
           packageFilter: packageFilter
         };
 

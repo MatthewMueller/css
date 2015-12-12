@@ -56,6 +56,7 @@ mako()
 Create a new plugin instance, with the following `options` available:
 
  - `root` the root for the project, paths will be set relative to here (default: `process.cwd()`)
+ - `extensions` the list of extensions **in addition to** `.css` to resolve (eg: `.less`, `.sass`)
 
 ### css.images
 

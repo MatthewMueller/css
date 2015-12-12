@@ -13,18 +13,12 @@ chai.use(require('chai-as-promised'));
 let assert = chai.assert;
 let fixture = path.resolve.bind(path, __dirname, 'fixtures');
 
-let plugins = [
-  stat('css'),
-  text('css'),
-  css()
-];
-
 describe('css plugin', function () {
   it('should create a script that executes and returns the top-level export', function () {
     let entry = fixture('simple/index.css');
 
     return mako()
-      .use(plugins)
+      .use(plugins())
       .build(entry)
       .then(function (tree) {
         let file = tree.getFile(entry);
@@ -36,7 +30,7 @@ describe('css plugin', function () {
     let entry = fixture('nested/index.css');
 
     return mako()
-      .use(plugins)
+      .use(plugins())
       .build(entry)
       .then(function (tree) {
         let file = tree.getFile(entry);
@@ -49,7 +43,7 @@ describe('css plugin', function () {
     let nested = fixture('nested/lib/index.css');
 
     return mako()
-      .use(plugins)
+      .use(plugins())
       .build(entry)
       .then(function (tree) {
         assert.isFalse(tree.hasFile(nested));
@@ -60,7 +54,7 @@ describe('css plugin', function () {
     let entry = fixture('modules/index.css');
 
     return mako()
-      .use(plugins)
+      .use(plugins())
       .build(entry)
       .then(function (tree) {
         let file = tree.getFile(entry);
@@ -72,7 +66,7 @@ describe('css plugin', function () {
     let entry = fixture('modules-with-js/index.css');
 
     return mako()
-      .use(plugins)
+      .use(plugins())
       .build(entry)
       .then(function (tree) {
         let file = tree.getFile(entry);
@@ -85,7 +79,7 @@ describe('css plugin', function () {
     let asset = fixture('assets/texture.png');
 
     return mako()
-      .use(plugins)
+      .use(plugins())
       .build(entry)
       .then(function (tree) {
         assert.isTrue(tree.hasFile(asset));
@@ -98,7 +92,7 @@ describe('css plugin', function () {
     let asset = fixture('nested-assets/lib/texture.png');
 
     return mako()
-      .use(plugins)
+      .use(plugins())
       .build(entry)
       .then(function (tree) {
         assert.isTrue(tree.hasFile(asset));
@@ -109,7 +103,7 @@ describe('css plugin', function () {
   it('should ignore absoulte urls', function () {
     let entry = fixture('http/index.css');
     return mako()
-      .use(plugins)
+      .use(plugins())
       .build(entry)
       .then(function (tree) {
         let file = tree.getFile(entry);
@@ -120,7 +114,7 @@ describe('css plugin', function () {
   it('should ignore data-uris', function () {
     let entry = fixture('datauri/index.css');
     return mako()
-      .use(plugins)
+      .use(plugins())
       .build(entry)
       .then(function (tree) {
         let file = tree.getFile(entry);
@@ -134,27 +128,62 @@ describe('css plugin', function () {
 
     return mako()
       .use(text([ 'txt' ]))
-      .use(parseText)
-      .use(plugins)
+      .dependencies('txt', function parseText(file) {
+        var filepath = path.resolve(path.dirname(file.path), file.contents.trim());
+        file.addDependency(filepath);
+      })
+      .use(plugins())
       .build(entry)
       .then(function (tree) {
         let file = tree.getFile(css);
         assert.strictEqual(file.contents, expected('subentries'));
       });
+  });
 
-    /**
-     * parse test plugin
-     *
-     * @param {Mako} mako mako object
-     */
-    function parseText(mako) {
-      mako.dependencies('txt', function (file) {
-        var filepath = path.resolve(path.dirname(file.path), file.contents.trim());
-        file.addDependency(filepath);
+  context('with options', function () {
+    context('.extensions', function () {
+      it('should be able to resolve all the specified extensions', function () {
+        let entry = fixture('extensions/index.css');
+        return mako()
+          .use([ stat('less'), text('less') ])
+          .postread('less', file => file.type = 'css')
+          .use(plugins({ extensions: [ '.less' ] }))
+          .build(entry)
+          .then(function (tree) {
+            let file = tree.getFile(entry);
+            assert.strictEqual(file.contents, expected('extensions'));
+          });
       });
-    }
+
+      it('should be able to flatten the specified list', function () {
+        let entry = fixture('extensions/index.css');
+        return mako()
+          .use([ stat('less'), text('less') ])
+          .postread('less', file => file.type = 'css')
+          .use(plugins({ extensions: '.less' }))
+          .build(entry)
+          .then(function (tree) {
+            let file = tree.getFile(entry);
+            assert.strictEqual(file.contents, expected('extensions'));
+          });
+      });
+    });
   });
 });
+
+/**
+ * Helper for getting plugins used during tests.
+ *
+ * @param {Object} [options]  Plugin configuration.
+ * @return {Array}
+ */
+function plugins(options) {
+  return [
+    stat('css'),
+    text('css'),
+    css(options)
+  ];
+}
 
 /**
  * Read fixture
