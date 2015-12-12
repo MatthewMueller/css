@@ -33,7 +33,7 @@ function plugin(options) {
   let config = defaults(options, { root: process.cwd() });
 
   return function (mako) {
-    mako.postread([ 'css', plugin.images, plugin.fonts ], relative);
+    mako.predependencies([ 'css', plugin.images, plugin.fonts ], relative);
     mako.dependencies('css', npm);
     mako.postdependencies('css', combine);
     mako.postdependencies([ plugin.images, plugin.fonts ], move);
