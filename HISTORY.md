@@ -1,4 +1,9 @@
 
+0.5.2 / 2015-12-11
+==================
+
+  * using predependencies hook to make sure transpiled languages get picked up
+
 0.5.1 / 2015-12-07
 ==================
 
