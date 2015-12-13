@@ -141,6 +141,8 @@ describe('css plugin', function () {
   });
 
   context('with options', function () {
+    // TODO: .root
+
     context('.extensions', function () {
       it('should be able to resolve all the specified extensions', function () {
         let entry = fixture('extensions/index.css');
@@ -165,6 +167,20 @@ describe('css plugin', function () {
           .then(function (tree) {
             let file = tree.getFile(entry);
             assert.strictEqual(file.contents, expected('extensions'));
+          });
+      });
+    });
+
+    context('.resolveOptions', function () {
+      it('should set config for resolve', function () {
+        let entry = fixture('modules-alt-dir/index.css');
+
+        return mako()
+          .use(plugins({ resolveOptions: { moduleDirectory: 'npm' } }))
+          .build(entry)
+          .then(function (tree) {
+            let file = tree.getFile(entry);
+            assert.strictEqual(file.contents, expected('modules-alt-dir'));
           });
       });
     });

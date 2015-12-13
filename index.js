@@ -1,7 +1,6 @@
 
 'use strict';
 
-let defaults = require('defaults');
 let deps = require('file-deps');
 let flatten = require('array-flatten');
 let isUrl = require('is-url');
@@ -12,6 +11,13 @@ let resolve = require('browser-resolve');
 let strip = require('strip-extension');
 let without = require('array-without');
 
+// default plugin configuration
+const defaults = {
+  root: process.cwd(),
+  extensions: []
+};
+
+// memory-efficient way of tracking mappings per-build
 const mappings = new WeakMap();
 
 // export the plugin fn as the primary export
@@ -31,10 +37,7 @@ exports.fonts = [ 'eot', 'otf', 'ttf', 'woff' ];
  * @return {Function}
  */
 function plugin(options) {
-  let config = defaults(options, {
-    root: process.cwd(),
-    extensions: []
-  });
+  let config = extend(defaults, options);
 
   return function (mako) {
     mako.predependencies([ 'css', plugin.images, plugin.fonts ], relative);
@@ -70,11 +73,11 @@ function plugin(options) {
 
     return Promise.all(dependencies.map(function (dep) {
       return new Promise(function (accept, reject) {
-        let options = {
+        let options = extend(config.resolveOptions, {
           filename: file.path,
           extensions: flatten([ '.css', config.extensions ]),
           packageFilter: packageFilter
-        };
+        });
 
         resolve(dep, options, function (err, res, pkg) {
           if (err) return reject(err);
@@ -165,6 +168,18 @@ function plugin(options) {
     file.contents = results.code;
     // TODO: sourcemaps
   }
+}
+
+/**
+ * Helper for generating objects. The returned value is always a fresh object
+ * with all arguments assigned as sources.
+ *
+ * @return {Object}
+ */
+function extend() {
+  var sources = [].slice.call(arguments);
+  var args = [ Object.create(null) ].concat(sources);
+  return Object.assign.apply(null, args);
 }
 
 /**
