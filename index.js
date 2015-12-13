@@ -13,8 +13,9 @@ let without = require('array-without');
 
 // default plugin configuration
 const defaults = {
-  root: process.cwd(),
-  extensions: []
+  extensions: [],
+  resolveOptions: null,
+  root: process.cwd()
 };
 
 // memory-efficient way of tracking mappings per-build
