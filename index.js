@@ -43,9 +43,8 @@ function plugin(options) {
   return function (mako) {
     mako.predependencies([ 'css', plugin.images, plugin.fonts ], relative);
     mako.dependencies('css', npm);
-    mako.postdependencies('css', combine);
+    mako.postdependencies('css', pack);
     mako.postdependencies([ plugin.images, plugin.fonts ], move);
-    mako.prewrite('css', pack);
   };
 
   /**
@@ -98,9 +97,9 @@ function plugin(options) {
    * @param {File} file  The current file being processed.
    * @param {Tree} tree  The build tree.
    */
-  function combine(file, tree) {
+  function pack(file, tree) {
     let mapping = getMapping(tree);
-    let remove = !isRoot(file);
+    let root = isRoot(file);
 
     // add this file to the mapping
     mapping[file.id] = prepare(file);
@@ -110,8 +109,15 @@ function plugin(options) {
       tree.removeDependency(dep, file.path);
     });
 
-    // unless this file is a root, remove it from the tree
-    if (remove) tree.removeFile(file.path);
+    if (!root) {
+      // anything other than the root should be removed
+      tree.removeFile(file.path);
+    } else {
+      // once the root is reached, generate the output file
+      let packer = new Pack(mapping);
+      let results = packer.pack(file.id);
+      file.contents = results.code;
+    }
   }
 
   /**
@@ -154,20 +160,6 @@ function plugin(options) {
       src: file.contents,
       entry: file.isEntry()
     };
-  }
-
-  /**
-   * Transform the actual file code via duo-pack.
-   *
-   * @param {File} file  The current file being processed.
-   * @param {Tree} tree  The build tree.
-   */
-  function pack(file, tree) {
-    let mapping = getMapping(tree);
-    let pack = new Pack(mapping);
-    let results = pack.pack(file.id);
-    file.contents = results.code;
-    // TODO: sourcemaps
   }
 }
 
@@ -236,7 +228,6 @@ function isRoot(file) {
   if (dependants.length === 0) return true;
 
   // if any of the dependants are not css, (ie: html) this is a root.
-  // TODO: support other file types (eg: less, sass, styl)
   return dependants.some(file => file.type !== 'css');
 }
 
