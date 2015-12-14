@@ -1,6 +1,7 @@
 
 'use strict';
 
+let debug = require('debug')('mako-css');
 let deps = require('file-deps');
 let flatten = require('array-flatten');
 let isUrl = require('is-url');
@@ -11,11 +12,14 @@ let resolve = require('browser-resolve');
 let strip = require('strip-extension');
 let without = require('array-without');
 
+const pwd = process.cwd();
+const relative = abs => path.relative(pwd, abs);
+
 // default plugin configuration
 const defaults = {
   extensions: [],
   resolveOptions: null,
-  root: process.cwd()
+  root: pwd
 };
 
 // memory-efficient way of tracking mappings per-build
@@ -38,10 +42,11 @@ exports.fonts = [ 'eot', 'otf', 'ttf', 'woff' ];
  * @return {Function}
  */
 function plugin(options) {
+  debug('initialize %j', options);
   let config = extend(defaults, options);
 
   return function (mako) {
-    mako.predependencies([ 'css', plugin.images, plugin.fonts ], relative);
+    mako.predependencies([ 'css', plugin.images, plugin.fonts ], id);
     mako.dependencies('css', npm);
     mako.postdependencies('css', pack);
     mako.postdependencies([ plugin.images, plugin.fonts ], move);
@@ -52,7 +57,7 @@ function plugin(options) {
    *
    * @param {File} file  The current file being processed.
    */
-  function relative(file) {
+  function id(file) {
     file.id = path.relative(config.root, file.path);
   }
 
@@ -79,8 +84,12 @@ function plugin(options) {
           packageFilter: packageFilter
         });
 
+        let parent = relative(file.path);
+        debug('resolving %s from %s', dep, parent);
         resolve(dep, options, function (err, res, pkg) {
           if (err) return reject(err);
+          let child = relative(res);
+          debug('resolved %s -> %s from %s', dep, child, parent);
           file.deps[dep] = path.relative(config.root, res);
           file.pkg = pkg;
           file.addDependency(res);
@@ -113,7 +122,7 @@ function plugin(options) {
       // anything other than the root should be removed
       tree.removeFile(file.path);
     } else {
-      // once the root is reached, generate the output file
+      debug('packing %s', relative(file.path));
       let packer = new Pack(mapping);
       let results = packer.pack(file.id);
       file.contents = results.code;
