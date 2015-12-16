@@ -30,7 +30,7 @@ exports = module.exports = plugin;
 
 // add the images/fonts extensions lists as secondary exports
 exports.images = [ 'bmp', 'gif', 'jpg', 'jpeg', 'png', 'svg' ];
-exports.fonts = [ 'eot', 'otf', 'ttf', 'woff' ];
+exports.fonts = [ 'eot', 'otf', 'ttf', 'woff', 'woff2' ];
 
 /**
  * Initialize the mako js plugin.
