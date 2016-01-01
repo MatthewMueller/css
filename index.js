@@ -1,14 +1,15 @@
 
 'use strict';
 
+let customImport = require('rework-custom-import');
 let debug = require('debug')('mako-css');
 let deps = require('file-deps');
 let flatten = require('array-flatten');
 let isUrl = require('is-url');
 let isDataUri = require('is-datauri');
-let Pack = require('duo-pack');
 let path = require('path');
 let resolve = require('browser-resolve');
+let rework = require('rework');
 let strip = require('strip-extension');
 let without = require('array-without');
 
@@ -123,9 +124,9 @@ function plugin(options) {
       tree.removeFile(file.path);
     } else {
       debug('packing %s', relative(file.path));
-      let packer = new Pack(mapping);
-      let results = packer.pack(file.id);
-      file.contents = results.code;
+      file.contents = rework(file.contents, { source: file.id })
+        .use(customImport(mapping))
+        .toString();
     }
   }
 
@@ -164,9 +165,8 @@ function plugin(options) {
   function prepare(file) {
     return {
       id: file.id,
+      source: file.contents,
       deps: file.deps || {},
-      type: file.type,
-      src: file.contents,
       entry: file.isEntry()
     };
   }
