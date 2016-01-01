@@ -1,4 +1,10 @@
 
+0.8.0 / 2015-12-31
+==================
+
+  * adding source maps support (fixes #1)
+  * switching from duo-pack to using rework internally
+
 0.7.0 / 2015-12-22
 ==================
 
