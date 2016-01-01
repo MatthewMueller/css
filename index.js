@@ -20,7 +20,8 @@ const relative = abs => path.relative(pwd, abs);
 const defaults = {
   extensions: [],
   resolveOptions: null,
-  root: pwd
+  root: pwd,
+  sourceMaps: false
 };
 
 // memory-efficient way of tracking mappings per-build
@@ -124,9 +125,22 @@ function plugin(options) {
       tree.removeFile(file.path);
     } else {
       debug('packing %s', relative(file.path));
-      file.contents = rework(file.contents, { source: file.id })
-        .use(customImport(mapping))
-        .toString();
+      let css = rework(file.contents, { source: file.id })
+        .use(customImport(mapping));
+
+      if (config.sourceMaps === true) {
+        let results = css.toString({
+          sourcemap: true,
+          sourcemapAsObject: true
+        });
+        let map = file.addDependency(file.path + '.map');
+        file.contents = results.code;
+        map.contents = JSON.stringify(results.map);
+      } else {
+        file.contents = css.toString({
+          sourcemap: config.sourceMaps === 'inline'
+        });
+      }
     }
   }
 
