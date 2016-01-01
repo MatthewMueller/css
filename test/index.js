@@ -22,7 +22,7 @@ describe('css plugin', function () {
       .build(entry)
       .then(function (tree) {
         let file = tree.getFile(entry);
-        assert.strictEqual(file.contents, expected('simple'));
+        assert.strictEqual(file.contents.trim(), expected('simple'));
       });
   });
 
@@ -34,7 +34,7 @@ describe('css plugin', function () {
       .build(entry)
       .then(function (tree) {
         let file = tree.getFile(entry);
-        assert.strictEqual(file.contents, expected('nested'));
+        assert.strictEqual(file.contents.trim(), expected('nested'));
       });
   });
 
@@ -58,7 +58,7 @@ describe('css plugin', function () {
       .build(entry)
       .then(function (tree) {
         let file = tree.getFile(entry);
-        assert.strictEqual(file.contents, expected('modules'));
+        assert.strictEqual(file.contents.trim(), expected('modules'));
       });
   });
 
@@ -70,7 +70,7 @@ describe('css plugin', function () {
       .build(entry)
       .then(function (tree) {
         let file = tree.getFile(entry);
-        assert.strictEqual(file.contents, expected('modules-with-js'));
+        assert.strictEqual(file.contents.trim(), expected('modules-with-js'));
       });
   });
 
@@ -107,7 +107,7 @@ describe('css plugin', function () {
       .build(entry)
       .then(function (tree) {
         let file = tree.getFile(entry);
-        assert.strictEqual(file.contents, expected('http'));
+        assert.strictEqual(file.contents.trim(), expected('http'));
       });
   });
 
@@ -118,7 +118,7 @@ describe('css plugin', function () {
       .build(entry)
       .then(function (tree) {
         let file = tree.getFile(entry);
-        assert.strictEqual(file.contents, expected('datauri'));
+        assert.strictEqual(file.contents.trim(), expected('datauri'));
       });
   });
 
@@ -136,7 +136,7 @@ describe('css plugin', function () {
       .build(entry)
       .then(function (tree) {
         let file = tree.getFile(css);
-        assert.strictEqual(file.contents, expected('subentries'));
+        assert.strictEqual(file.contents.trim(), expected('subentries'));
       });
   });
 
@@ -153,7 +153,7 @@ describe('css plugin', function () {
           .build(entry)
           .then(function (tree) {
             let file = tree.getFile(entry);
-            assert.strictEqual(file.contents, expected('extensions'));
+            assert.strictEqual(file.contents.trim(), expected('extensions'));
           });
       });
 
@@ -166,7 +166,7 @@ describe('css plugin', function () {
           .build(entry)
           .then(function (tree) {
             let file = tree.getFile(entry);
-            assert.strictEqual(file.contents, expected('extensions'));
+            assert.strictEqual(file.contents.trim(), expected('extensions'));
           });
       });
     });
@@ -180,7 +180,7 @@ describe('css plugin', function () {
           .build(entry)
           .then(function (tree) {
             let file = tree.getFile(entry);
-            assert.strictEqual(file.contents, expected('modules-alt-dir'));
+            assert.strictEqual(file.contents.trim(), expected('modules-alt-dir'));
           });
       });
     });
@@ -218,5 +218,5 @@ function read(path) {
  * @return {String}
  */
 function expected(name) {
-  return read(fixture(name, 'expected.css'));
+  return read(fixture(name, 'expected.css')).trim();
 }
