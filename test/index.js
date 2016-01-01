@@ -184,6 +184,32 @@ describe('css plugin', function () {
           });
       });
     });
+
+    context('.sourceMaps', function () {
+      it('should render inline source maps', function () {
+        let entry = fixture('source-maps-inline/index.css');
+
+        return mako()
+          .use(plugins({ sourceMaps: 'inline' }))
+          .build(entry)
+          .then(function (tree) {
+            let file = tree.getFile(entry);
+            assert.strictEqual(file.contents.trim(), expected('source-maps-inline'));
+          });
+      });
+
+      it('should render external source maps', function () {
+        let entry = fixture('source-maps/index.css');
+
+        return mako()
+          .use(plugins({ sourceMaps: true }))
+          .build(entry)
+          .then(function (tree) {
+            let file = tree.getFile(entry + '.map');
+            assert.strictEqual(file.contents.trim(), expected('source-maps', 'map'));
+          });
+      });
+    });
   });
 });
 
@@ -217,6 +243,6 @@ function read(path) {
  * @param  {String} name fixture name
  * @return {String}
  */
-function expected(name) {
-  return read(fixture(name, 'expected.css')).trim();
+function expected(name, ext) {
+  return read(fixture(name, `expected.${ext || 'css'}`)).trim();
 }
