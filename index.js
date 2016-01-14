@@ -10,6 +10,7 @@ let isDataUri = require('is-datauri');
 let path = require('path');
 let resolve = require('browser-resolve');
 let rework = require('rework');
+let rewrite = require('rework-plugin-url');
 let strip = require('strip-extension');
 let without = require('array-without');
 
@@ -126,7 +127,12 @@ function plugin(options) {
     } else {
       debug('packing %s', relative(file.path));
       let css = rework(file.contents, { source: file.id })
-        .use(customImport(mapping));
+        .use(customImport(mapping))
+        .use(rewrite(function (url) {
+          let source = this.position.source; // eslint-disable-line no-invalid-this
+          if (!relativeRef(url)) return url;
+          return path.join(path.dirname(source), path.normalize(url));
+        }));
 
       if (config.sourceMaps === true) {
         let results = css.toString({

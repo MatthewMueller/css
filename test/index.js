@@ -3,6 +3,7 @@
 
 let chai = require('chai');
 let css = require('..');
+let deps = require('file-deps');
 let fs = require('fs');
 let mako = require('mako');
 let path = require('path');
@@ -100,7 +101,20 @@ describe('css plugin', function () {
       });
   });
 
-  it('should ignore absoulte urls', function () {
+  it('should rewrite asset urls', function () {
+    let entry = fixture('nested-assets/index.css');
+
+    return mako()
+      .use(plugins())
+      .build(entry)
+      .then(function (tree) {
+        let file = tree.getFile(entry);
+        let path = deps(file.contents, 'css')[0];
+        assert.equal(path, 'test/fixtures/nested-assets/lib/texture.png');
+      });
+  });
+
+  it('should ignore absolute urls', function () {
     let entry = fixture('http/index.css');
     return mako()
       .use(plugins())
@@ -141,7 +155,20 @@ describe('css plugin', function () {
   });
 
   context('with options', function () {
-    // TODO: .root
+    context('.root', function () {
+      it('should rewrite asset urls relative to the root', function () {
+        let entry = fixture('nested-assets/index.css');
+
+        return mako()
+          .use(plugins({ root: fixture('nested-assets') }))
+          .build(entry)
+          .then(function (tree) {
+            let file = tree.getFile(entry);
+            let path = deps(file.contents, 'css')[0];
+            assert.equal(path, 'lib/texture.png');
+          });
+      });
+    });
 
     context('.extensions', function () {
       it('should be able to resolve all the specified extensions', function () {
