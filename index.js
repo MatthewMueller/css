@@ -129,9 +129,10 @@ function plugin(options) {
       let css = rework(file.contents, { source: file.id })
         .use(customImport(mapping))
         .use(rewrite(function (url) {
-          let source = this.position.source; // eslint-disable-line no-invalid-this
           if (!relativeRef(url)) return url;
-          return path.join(path.dirname(source), path.normalize(url));
+          let entry = path.dirname(file.id);
+          let dep = mapping[this.position.source].deps[url];
+          return path.relative(entry, dep);
         }));
 
       if (config.sourceMaps === true) {

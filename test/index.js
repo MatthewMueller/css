@@ -101,7 +101,7 @@ describe('css plugin', function () {
       });
   });
 
-  it('should rewrite asset urls', function () {
+  it('should rewrite asset urls relative to the entry', function () {
     let entry = fixture('nested-assets/index.css');
 
     return mako()
@@ -110,7 +110,31 @@ describe('css plugin', function () {
       .then(function (tree) {
         let file = tree.getFile(entry);
         let path = deps(file.contents, 'css')[0];
-        assert.equal(path, 'test/fixtures/nested-assets/lib/texture.png');
+        assert.equal(path, 'lib/texture.png');
+      });
+  });
+
+  it('should rewrite asset urls correctly even in separate directories', function () {
+    let entry = fixture('deep-assets/index.css');
+
+    return mako()
+      .use(plugins())
+      .build(entry)
+      .then(function (tree) {
+        let file = tree.getFile(entry);
+        assert.strictEqual(file.contents.trim(), expected('deep-assets'));
+      });
+  });
+
+  it('should rewrite dependency asset urls relative to the entry file', function () {
+    let entry = fixture('dependency-assets/index.css');
+
+    return mako()
+      .use(plugins())
+      .build(entry)
+      .then(function (tree) {
+        let file = tree.getFile(entry);
+        assert.strictEqual(file.contents.trim(), expected('dependency-assets'));
       });
   });
 
@@ -156,18 +180,7 @@ describe('css plugin', function () {
 
   context('with options', function () {
     context('.root', function () {
-      it('should rewrite asset urls relative to the root', function () {
-        let entry = fixture('nested-assets/index.css');
-
-        return mako()
-          .use(plugins({ root: fixture('nested-assets') }))
-          .build(entry)
-          .then(function (tree) {
-            let file = tree.getFile(entry);
-            let path = deps(file.contents, 'css')[0];
-            assert.equal(path, 'lib/texture.png');
-          });
-      });
+      // TODO
     });
 
     context('.extensions', function () {
