@@ -73,13 +73,15 @@ function plugin(options) {
    * @param {Builder} mako  The mako builder instance.
    * @return {Promise}
    */
-  function npm(file) {
+  function* npm(file) {
+    file.time('css:resolve');
+
     file.deps = Object.create(null);
 
     // find the list of refs, ignore any absolute urls or data-urls
     var dependencies = deps(file.contents, 'css').filter(relativeRef);
 
-    return Promise.all(dependencies.map(function (dep) {
+    yield Promise.all(dependencies.map(function (dep) {
       return new Promise(function (accept, reject) {
         let options = extend(config.resolveOptions, {
           filename: file.path,
@@ -100,6 +102,8 @@ function plugin(options) {
         });
       });
     }));
+
+    file.timeEnd('css:resolve');
   }
 
   /**
@@ -110,6 +114,8 @@ function plugin(options) {
    * @param {Tree} tree  The build tree.
    */
   function pack(file, tree) {
+    file.time('css:pack');
+
     let mapping = getMapping(tree);
     let root = isRoot(file);
 
@@ -148,6 +154,8 @@ function plugin(options) {
           sourcemap: config.sourceMaps === 'inline'
         });
       }
+
+      file.timeEnd('css:pack');
     }
   }
 
