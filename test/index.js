@@ -21,8 +21,8 @@ describe('css plugin', function () {
     return mako()
       .use(plugins())
       .build(entry)
-      .then(function (tree) {
-        let file = tree.getFile(entry);
+      .then(function (build) {
+        let file = build.tree.getFile(entry);
         assert.strictEqual(file.contents.trim(), expected('simple'));
       });
   });
@@ -33,8 +33,8 @@ describe('css plugin', function () {
     return mako()
       .use(plugins())
       .build(entry)
-      .then(function (tree) {
-        let file = tree.getFile(entry);
+      .then(function (build) {
+        let file = build.tree.getFile(entry);
         assert.strictEqual(file.contents.trim(), expected('nested'));
       });
   });
@@ -46,8 +46,8 @@ describe('css plugin', function () {
     return mako()
       .use(plugins())
       .build(entry)
-      .then(function (tree) {
-        assert.isFalse(tree.hasFile(nested));
+      .then(function (build) {
+        assert.isFalse(build.tree.hasFile(nested));
       });
   });
 
@@ -57,8 +57,8 @@ describe('css plugin', function () {
     return mako()
       .use(plugins())
       .build(entry)
-      .then(function (tree) {
-        let file = tree.getFile(entry);
+      .then(function (build) {
+        let file = build.tree.getFile(entry);
         assert.strictEqual(file.contents.trim(), expected('modules'));
       });
   });
@@ -69,8 +69,8 @@ describe('css plugin', function () {
     return mako()
       .use(plugins())
       .build(entry)
-      .then(function (tree) {
-        let file = tree.getFile(entry);
+      .then(function (build) {
+        let file = build.tree.getFile(entry);
         assert.strictEqual(file.contents.trim(), expected('modules-with-js'));
       });
   });
@@ -82,9 +82,9 @@ describe('css plugin', function () {
     return mako()
       .use(plugins())
       .build(entry)
-      .then(function (tree) {
-        assert.isTrue(tree.hasFile(asset));
-        assert.isTrue(tree.hasDependency(entry, asset));
+      .then(function (build) {
+        assert.isTrue(build.tree.hasFile(asset));
+        assert.isTrue(build.tree.hasDependency(entry, asset));
       });
   });
 
@@ -95,9 +95,9 @@ describe('css plugin', function () {
     return mako()
       .use(plugins())
       .build(entry)
-      .then(function (tree) {
-        assert.isTrue(tree.hasFile(asset));
-        assert.isTrue(tree.hasDependency(entry, asset));
+      .then(function (build) {
+        assert.isTrue(build.tree.hasFile(asset));
+        assert.isTrue(build.tree.hasDependency(entry, asset));
       });
   });
 
@@ -107,8 +107,8 @@ describe('css plugin', function () {
     return mako()
       .use(plugins())
       .build(entry)
-      .then(function (tree) {
-        let file = tree.getFile(entry);
+      .then(function (build) {
+        let file = build.tree.getFile(entry);
         let path = deps(file.contents, 'css')[0];
         assert.equal(path, 'lib/texture.png');
       });
@@ -120,8 +120,8 @@ describe('css plugin', function () {
     return mako()
       .use(plugins())
       .build(entry)
-      .then(function (tree) {
-        let file = tree.getFile(entry);
+      .then(function (build) {
+        let file = build.tree.getFile(entry);
         assert.strictEqual(file.contents.trim(), expected('deep-assets'));
       });
   });
@@ -132,8 +132,8 @@ describe('css plugin', function () {
     return mako()
       .use(plugins())
       .build(entry)
-      .then(function (tree) {
-        let file = tree.getFile(entry);
+      .then(function (build) {
+        let file = build.tree.getFile(entry);
         assert.strictEqual(file.contents.trim(), expected('dependency-assets'));
       });
   });
@@ -143,8 +143,8 @@ describe('css plugin', function () {
     return mako()
       .use(plugins())
       .build(entry)
-      .then(function (tree) {
-        let file = tree.getFile(entry);
+      .then(function (build) {
+        let file = build.tree.getFile(entry);
         assert.strictEqual(file.contents.trim(), expected('http'));
       });
   });
@@ -154,8 +154,8 @@ describe('css plugin', function () {
     return mako()
       .use(plugins())
       .build(entry)
-      .then(function (tree) {
-        let file = tree.getFile(entry);
+      .then(function (build) {
+        let file = build.tree.getFile(entry);
         assert.strictEqual(file.contents.trim(), expected('datauri'));
       });
   });
@@ -172,8 +172,8 @@ describe('css plugin', function () {
       })
       .use(plugins())
       .build(entry)
-      .then(function (tree) {
-        let file = tree.getFile(css);
+      .then(function (build) {
+        let file = build.tree.getFile(css);
         assert.strictEqual(file.contents.trim(), expected('subentries'));
       });
   });
@@ -191,8 +191,8 @@ describe('css plugin', function () {
           .postread('less', file => file.type = 'css')
           .use(plugins({ extensions: [ '.less' ] }))
           .build(entry)
-          .then(function (tree) {
-            let file = tree.getFile(entry);
+          .then(function (build) {
+            let file = build.tree.getFile(entry);
             assert.strictEqual(file.contents.trim(), expected('extensions'));
           });
       });
@@ -204,8 +204,8 @@ describe('css plugin', function () {
           .postread('less', file => file.type = 'css')
           .use(plugins({ extensions: '.less' }))
           .build(entry)
-          .then(function (tree) {
-            let file = tree.getFile(entry);
+          .then(function (build) {
+            let file = build.tree.getFile(entry);
             assert.strictEqual(file.contents.trim(), expected('extensions'));
           });
       });
@@ -218,8 +218,8 @@ describe('css plugin', function () {
         return mako()
           .use(plugins({ resolveOptions: { moduleDirectory: 'npm' } }))
           .build(entry)
-          .then(function (tree) {
-            let file = tree.getFile(entry);
+          .then(function (build) {
+            let file = build.tree.getFile(entry);
             assert.strictEqual(file.contents.trim(), expected('modules-alt-dir'));
           });
       });
@@ -232,8 +232,8 @@ describe('css plugin', function () {
         return mako()
           .use(plugins({ sourceMaps: 'inline' }))
           .build(entry)
-          .then(function (tree) {
-            let file = tree.getFile(entry);
+          .then(function (build) {
+            let file = build.tree.getFile(entry);
             assert.strictEqual(file.contents.trim(), expected('source-maps-inline'));
           });
       });
@@ -244,8 +244,8 @@ describe('css plugin', function () {
         return mako()
           .use(plugins({ sourceMaps: true }))
           .build(entry)
-          .then(function (tree) {
-            let file = tree.getFile(entry + '.map');
+          .then(function (build) {
+            let file = build.tree.getFile(entry + '.map');
             assert.strictEqual(file.contents.trim(), expected('source-maps', 'map'));
           });
       });

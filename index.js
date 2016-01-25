@@ -68,13 +68,13 @@ function plugin(options) {
    * Mako dependencies hook that parses a JS file for `require` statements,
    * resolving them to absolute paths and adding them as dependencies.
    *
-   * @param {File} file     The current file being processed.
-   * @param {Tree} tree     The build tree.
-   * @param {Builder} mako  The mako builder instance.
+   * @param {File} file    The current file being processed.
+   * @param {Tree} tree    The build tree.
+   * @param {Build} build  The mako builder instance.
    * @return {Promise}
    */
-  function* npm(file) {
-    file.time('css:resolve');
+  function* npm(file, tree, build) {
+    let timer = build.time('css:resolve');
 
     file.deps = Object.create(null);
 
@@ -103,18 +103,19 @@ function plugin(options) {
       });
     }));
 
-    file.timeEnd('css:resolve');
+    timer();
   }
 
   /**
    * Mako prewrite hook that rolls up all the CSS files into the root files.
    * (also removes all dependencies from the build tree)
    *
-   * @param {File} file  The current file being processed.
-   * @param {Tree} tree  The build tree.
+   * @param {File} file    The current file being processed.
+   * @param {Tree} tree    The current tree.
+   * @param {Build} build  The current build.
    */
-  function pack(file, tree) {
-    file.time('css:pack');
+  function pack(file, tree, build) {
+    let timer = build.time('css:pack');
 
     let mapping = getMapping(tree);
     let root = isRoot(file);
@@ -155,7 +156,7 @@ function plugin(options) {
         });
       }
 
-      file.timeEnd('css:pack');
+      timer();
     }
   }
 
