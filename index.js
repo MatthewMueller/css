@@ -1,6 +1,7 @@
 
 'use strict';
 
+let convert = require('convert-source-map');
 let customImport = require('rework-custom-import');
 let debug = require('debug')('mako-css');
 let deps = require('file-deps');
@@ -22,7 +23,8 @@ const defaults = {
   extensions: [],
   resolveOptions: null,
   root: pwd,
-  sourceMaps: false
+  sourceMaps: false,
+  sourceRoot: 'file://mako'
 };
 
 // memory-efficient way of tracking mappings per-build
@@ -71,7 +73,6 @@ function plugin(options) {
    * @param {File} file    The current file being processed.
    * @param {Tree} tree    The build tree.
    * @param {Build} build  The mako builder instance.
-   * @return {Promise}
    */
   function* npm(file, tree, build) {
     let timer = build.time('css:resolve');
@@ -133,27 +134,14 @@ function plugin(options) {
       tree.removeFile(file.path);
     } else {
       debug('packing %s', relative(file.path));
-      let css = rework(file.contents, { source: file.id })
-        .use(customImport(mapping))
-        .use(rewrite(function (url) {
-          if (!relativeRef(url)) return url;
-          let entry = path.dirname(file.id);
-          let dep = mapping[this.position.source].deps[url];
-          return path.relative(entry, dep);
-        }));
 
-      if (config.sourceMaps === true) {
-        let results = css.toString({
-          sourcemap: true,
-          sourcemapAsObject: true
-        });
-        let map = file.addDependency(file.path + '.map');
-        file.contents = results.code;
-        map.contents = JSON.stringify(results.map);
-      } else {
-        file.contents = css.toString({
-          sourcemap: config.sourceMaps === 'inline'
-        });
+      let results = doPack(file, mapping, config.sourceMaps, config.sourceRoot);
+      file.contents = results.code;
+
+      if (results.map) {
+        let map = file.addDependency(`${file.path}.map`);
+        map.contents = results.map;
+        file.contents += `/*# sourceMappingURL=${path.basename(map.path)} */`;
       }
 
       timer();
@@ -280,4 +268,49 @@ function findRoots(file) {
   return file.dependants({ recursive: true, objects: true })
     .filter(file => isRoot(file))
     .map(file => file.path);
+}
+
+/**
+ * Packs the CSS file and returns the resulting code and source map.
+ *
+ * @param {File} file          The entry file to pack
+ * @param {Object} mapping     The mapping to be used by custom-import
+ * @param {Mixed} sourceMaps   The sourceMaps config option
+ * @param {String} sourceRoot  The sourceRoot config option
+ * @return {Object}
+ */
+function doPack(file, mapping, sourceMaps, sourceRoot) {
+  let css = rework(file.contents, { source: file.id })
+    .use(customImport(mapping))
+    .use(rewrite(function (url) {
+      if (!relativeRef(url)) return url;
+      let entry = path.dirname(file.id);
+      let dep = mapping[this.position.source].deps[url];
+      return path.relative(entry, dep);
+    }));
+
+  let results = css.toString({
+    sourcemap: true,
+    sourcemapAsObject: true
+  });
+
+  let map = convert.fromObject(results.map);
+  map.setProperty('sourceRoot', sourceRoot);
+
+  if (sourceMaps === 'inline') {
+    return {
+      code: `${results.code}\n${map.toComment({ multiline: true })}`,
+      map: null
+    };
+  } else if (sourceMaps) {
+    return {
+      code: results.code,
+      map: map.toJSON()
+    };
+  }
+
+  return {
+    code: results.code,
+    map: null
+  };
 }
