@@ -1,4 +1,9 @@
 
+0.10.3 / 2016-02-04
+===================
+
+  * ensuring consistent spacing between source and map annotation
+
 0.10.2 / 2016-02-03
 ===================
 
