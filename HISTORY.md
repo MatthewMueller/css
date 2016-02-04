@@ -1,4 +1,9 @@
 
+0.10.2 / 2016-02-03
+===================
+
+  * add the map as a dependant so processing goes in the right order
+
 0.10.1 / 2016-02-01
 ===================
 
