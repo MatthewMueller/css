@@ -139,7 +139,7 @@ function plugin(options) {
       file.contents = results.code;
 
       if (results.map) {
-        let map = file.addDependency(`${file.path}.map`);
+        let map = file.addDependant(`${file.path}.map`);
         map.contents = results.map;
         file.contents += `/*# sourceMappingURL=${path.basename(map.path)} */`;
       }
