@@ -141,7 +141,7 @@ function plugin(options) {
       if (results.map) {
         let map = file.addDependant(`${file.path}.map`);
         map.contents = results.map;
-        file.contents += `/*# sourceMappingURL=${path.basename(map.path)} */`;
+        file.contents += `\n\n/*# sourceMappingURL=${path.basename(map.path)} */`;
       }
 
       timer();
@@ -299,7 +299,7 @@ function doPack(file, mapping, sourceMaps, sourceRoot) {
 
   if (sourceMaps === 'inline') {
     return {
-      code: `${results.code}\n${map.toComment({ multiline: true })}`,
+      code: `${results.code}\n\n${map.toComment({ multiline: true })}`,
       map: null
     };
   } else if (sourceMaps) {

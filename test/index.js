@@ -245,8 +245,10 @@ describe('css plugin', function () {
           .use(plugins({ sourceMaps: true }))
           .build(entry)
           .then(function (build) {
-            let file = build.tree.getFile(entry + '.map');
-            assert.strictEqual(file.contents.trim(), expected('source-maps', 'map'));
+            let css = build.tree.getFile(entry);
+            let map = build.tree.getFile(`${entry}.map`);
+            assert.strictEqual(css.contents.trim(), expected('source-maps', 'css'));
+            assert.strictEqual(map.contents.trim(), expected('source-maps', 'map'));
           });
       });
     });
