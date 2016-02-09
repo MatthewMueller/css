@@ -284,8 +284,9 @@ function doPack(file, mapping, sourceMaps, sourceRoot) {
     .use(customImport(mapping))
     .use(rewrite(function (url) {
       if (!relativeRef(url)) return url;
+      let urlpath = url.split(/[?#]/)[0];
       let entry = path.dirname(file.id);
-      let dep = mapping[this.position.source].deps[url];
+      let dep = mapping[this.position.source].deps[urlpath];
       return path.relative(entry, dep);
     }));
 
