@@ -88,6 +88,19 @@ describe('css plugin', function () {
       });
   });
 
+  it('should work with query parameters', function () {
+    let entry = fixture('assets-query/index.css');
+    let asset = fixture('assets-query/texture.png');
+
+    return mako()
+      .use(plugins())
+      .build(entry)
+      .then(function (build) {
+        assert.isTrue(build.tree.hasFile(asset));
+        assert.isTrue(build.tree.hasDependency(entry, asset));
+      });
+  });
+
   it('should move assets linked to dependencies to the entry file', function () {
     let entry = fixture('nested-assets/index.css');
     let asset = fixture('nested-assets/lib/texture.png');
