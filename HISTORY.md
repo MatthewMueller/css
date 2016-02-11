@@ -1,4 +1,10 @@
 
+0.11.0 / 2016-02-10
+===================
+
+  * update mako core and dev deps
+  * handling extra url (querystring and fragments) more gracefully
+
 0.10.3 / 2016-02-04
 ===================
 
