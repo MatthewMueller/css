@@ -295,7 +295,8 @@ function read(path) {
 /**
  * Read the expected
  *
- * @param  {String} name fixture name
+ * @param {String} name   The fixture directory name
+ * @param {String} [ext]  The fixture file extension (default: 'css')
  * @return {String}
  */
 function expected(name, ext) {
