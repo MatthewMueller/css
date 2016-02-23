@@ -17,13 +17,14 @@
     "file-deps": "0.0.11",
     "is-datauri": "^0.1.0",
     "is-url": "^1.2.1",
+    "mako-sourcemaps": "^0.1.0",
     "rework": "^1.0.1",
     "rework-custom-import": "^0.1.0",
     "rework-plugin-url": "^1.1.0",
     "strip-extension": "^1.1.0"
   },
   "peerDependencies": {
-    "mako": "^0.8.0"
+    "mako": "^0.9.0"
   },
   "devDependencies": {
     "@dominicbarnes/eslint-config": "^1.0.0",
@@ -34,13 +35,13 @@
     "eslint": "^2.1.0",
     "eslint-plugin-mocha": "^2.0.0",
     "eslint-plugin-require-path-exists": "^1.0.15",
-    "mako": "^0.8.0",
-    "mako-copy": "^0.7.0",
-    "mako-output": "^0.6.0",
+    "mako": "^0.9.0",
+    "mako-copy": "^0.8.0",
+    "mako-output": "^0.7.0",
     "mako-serve": "^0.7.0",
-    "mako-stat": "^0.7.0",
-    "mako-text": "^0.7.0",
-    "mako-write": "^0.6.0",
+    "mako-stat": "^0.8.0",
+    "mako-text": "^0.8.0",
+    "mako-write": "^0.7.0",
     "mocha": "^2.3.0",
     "normalize.css": "^3.0.3"
   },
