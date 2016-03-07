@@ -3,8 +3,9 @@
   "version": "0.12.0",
   "description": "a mako plugin for assembling css files and their linked assets",
   "keywords": [
-    "mako",
-    "plugin"
+    "mako-plugin",
+    "css",
+    "npm"
   ],
   "repository": "makojs/css",
   "license": "MIT",
