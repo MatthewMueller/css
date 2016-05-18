@@ -2,6 +2,7 @@
 'use strict';
 
 let chai = require('chai');
+let convert = require('convert-source-map');
 let css = require('..');
 let deps = require('file-deps');
 let fs = require('fs');
@@ -239,29 +240,15 @@ describe('css plugin', function () {
     });
 
     context('.sourceMaps', function () {
-      it('should render inline source maps', function () {
+      it('should generate file.sourcemap', function () {
         let entry = fixture('source-maps-inline/index.css');
-
-        return mako()
-          .use(plugins({ sourceMaps: 'inline' }))
-          .build(entry)
-          .then(function (build) {
-            let file = build.tree.getFile(entry);
-            assert.strictEqual(file.contents.trim(), expected('source-maps-inline'));
-          });
-      });
-
-      it('should render external source maps', function () {
-        let entry = fixture('source-maps/index.css');
 
         return mako()
           .use(plugins({ sourceMaps: true }))
           .build(entry)
           .then(function (build) {
-            let css = build.tree.getFile(entry);
-            let map = build.tree.getFile(`${entry}.map`);
-            assert.strictEqual(css.contents.trim(), expected('source-maps', 'css'));
-            assert.strictEqual(map.contents.trim(), expected('source-maps', 'map'));
+            let file = build.tree.getFile(entry);
+            assert(convert.fromObject(file.sourcemap), 'expected valid source-map object');
           });
       });
     });

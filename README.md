@@ -56,9 +56,11 @@ mako()
 
 Create a new plugin instance, with the following `options` available:
 
- - `root` the root for the project, paths will be set relative to here (default: `process.cwd()`)
  - `extensions` the list of extensions **in addition to** `.css` to resolve (eg: `.less`, `.sass`)
  - `resolveOptions` additional options to be passed to [resolve](https://www.npmjs.com/package/resolve)
+ - `root` the root for the project, paths will be set relative to here (default: `process.cwd()`)
+ - `sourceMaps` specify `true` to enable source-maps (default: `false`)
+ - `sourceRoot` specifies the path used as the source map root (default: `"mako://"`)
 
 ### css.images
 
@@ -79,7 +81,13 @@ array directly, but for core support of other types, please open an issue.
 During **analyze**, this will parse CSS files for `@import` statements and `url(...)` links, which
 will be resolved via [resolve](https://www.npmjs.com/package/resolve).
 
-During **build**, each _entry_ CSS file will have all of it's dependencies bundled into a single
+During **assemble**, each _entry_ CSS file will have all of it's dependencies bundled into a single
 file. Along the way, those dependencies will be _removed_ from the tree, leaving only the output
 files behind. The assets, however, will remain in the tree, with their link being moved to the
 entry files that use them.
+
+## About Source Maps
+
+By enabling source-maps with `sourceMaps: true`, this simply generates `file.sourcemap` which is a plain
+object with the source-map metadata. Use another plugin such as [mako-sourcemaps](https://github.com/makojs/sourcemaps)
+to take this object and write it to an external file or as an inline comment.
