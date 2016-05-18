@@ -1,4 +1,9 @@
 
+0.13.0 / 2016-05-17
+===================
+
+  * removing mako-sourcemaps, delegating to plugin bundles to add (fixes #16)
+
 0.12.1 / 2016-03-06
 ===================
 
