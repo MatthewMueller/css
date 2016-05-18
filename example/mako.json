@@ -4,6 +4,7 @@
     [ "mako-stat", [ "html", "css" ] ],
     [ "mako-text", "css" ],
     [ "..", { "sourceMaps": true, "root": ".." } ],
+    [ "mako-sourcemaps", [ "css" ] ],
     [ "mako-output", [ "html", "css", "map" ] ],
     [ "mako-copy", "html" ],
     [ "mako-write", [ "css", "map" ] ]
