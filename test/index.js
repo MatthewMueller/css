@@ -76,6 +76,18 @@ describe('css plugin', function () {
       });
   });
 
+  it('should prefer a style definition in the package.json', function () {
+    let entry = fixture('modules-with-style/index.css');
+
+    return mako()
+      .use(plugins())
+      .build(entry)
+      .then(function (build) {
+        let file = build.tree.getFile(entry);
+        assert.strictEqual(file.contents.trim(), expected('modules-with-style'));
+      });
+  });
+
   it('should find assets linked to the entry file', function () {
     let entry = fixture('assets/index.css');
     let asset = fixture('assets/texture.png');

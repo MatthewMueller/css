@@ -204,7 +204,11 @@ function extend() {
  * @return {Object}
  */
 function packageFilter(pkg) {
-  if (pkg.main) pkg.main = strip(pkg.main);
+  if (pkg.style) {
+    pkg.main = pkg.style;
+  } else if (pkg.main) {
+    pkg.main = strip(pkg.main);
+  }
   return pkg;
 }
 
