@@ -12,7 +12,6 @@ let path = require('path');
 let resolve = require('browser-resolve');
 let rework = require('rework');
 let rewrite = require('rework-plugin-url');
-let sourcemaps = require('mako-sourcemaps');
 let strip = require('strip-extension');
 let without = require('array-without');
 
@@ -56,10 +55,6 @@ function plugin(options) {
     mako.dependencies('css', npm);
     mako.postdependencies('css', pack);
     mako.postdependencies([ plugin.images, plugin.fonts ], move);
-
-    if (config.sourceMaps) {
-      mako.use(sourcemaps('css', { inline: config.sourceMaps === 'inline' }));
-    }
   };
 
   /**
