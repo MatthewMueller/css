@@ -49,7 +49,7 @@
     "normalize.css": "^4.1.1"
   },
   "scripts": {
-    "lint": "eslint .",
+    "lint": "eslint --cache .",
     "pretest": "npm run lint",
     "test": "istanbul cover _mocha",
     "coveralls": "istanbul-coveralls",
