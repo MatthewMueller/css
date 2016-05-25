@@ -71,10 +71,9 @@ function plugin(options) {
    * resolving them to absolute paths and adding them as dependencies.
    *
    * @param {File} file    The current file being processed.
-   * @param {Tree} tree    The build tree.
    * @param {Build} build  The mako builder instance.
    */
-  function* npm(file, tree, build) {
+  function* npm(file, build) {
     let timer = build.time('css:resolve');
 
     file.deps = Object.create(null);
@@ -112,13 +111,12 @@ function plugin(options) {
    * (also removes all dependencies from the build tree)
    *
    * @param {File} file    The current file being processed.
-   * @param {Tree} tree    The current tree.
    * @param {Build} build  The current build.
    */
-  function pack(file, tree, build) {
+  function pack(file, build) {
     let timer = build.time('css:pack');
 
-    let mapping = getMapping(tree);
+    let mapping = getMapping(build.tree);
     let root = isRoot(file);
 
     // add this file to the mapping
@@ -126,12 +124,12 @@ function plugin(options) {
 
     // remove each dependant link
     file.dependants().forEach(function (dep) {
-      tree.removeDependency(dep, file.path);
+      build.tree.removeDependency(dep, file.path);
     });
 
     if (!root) {
       // anything other than the root should be removed
-      tree.removeFile(file.path);
+      build.tree.removeFile(file.path);
     } else {
       debug('packing %s', relative(file.path));
 
@@ -148,11 +146,11 @@ function plugin(options) {
    * link them to entry files instead. (so they'll be written even after the
    * tree has been pruned for pack)
    *
-   * @param {File} file  The current file being processed.
-   * @param {Tree} tree  The build tree.
+   * @param {File} file    The current file being processed.
+   * @param {Build} build  The current build.
    */
-  function move(file, tree) {
-    let mapping = getMapping(tree);
+  function move(file, build) {
+    let mapping = getMapping(build.tree);
     let roots = findRoots(file);
 
     // add this file to the mapping
@@ -160,12 +158,12 @@ function plugin(options) {
 
     // attach this file to each possible root
     roots.forEach(function (root) {
-      tree.addDependency(root, file.path);
+      build.tree.addDependency(root, file.path);
     });
 
     // remove the link from the original dependants
     without(file.dependants(), roots).forEach(function (dep) {
-      tree.removeDependency(dep, file.path);
+      build.tree.removeDependency(dep, file.path);
     });
   }
 
