@@ -14,15 +14,12 @@ let rework = require('rework');
 let rewrite = require('rework-plugin-url');
 let strip = require('strip-extension');
 let without = require('array-without');
-
-const pwd = process.cwd();
-const relative = abs => path.relative(pwd, abs);
+let relative = require('relative');
 
 // default plugin configuration
 const defaults = {
   extensions: [],
   resolveOptions: null,
-  root: pwd,
   sourceMaps: false,
   sourceRoot: 'file://mako'
 };
@@ -51,20 +48,10 @@ function plugin(options) {
   let config = extend(defaults, options);
 
   return function (mako) {
-    mako.predependencies([ 'css', plugin.images, plugin.fonts ], id);
     mako.dependencies('css', npm);
     mako.postdependencies('css', pack);
     mako.postdependencies([ plugin.images, plugin.fonts ], move);
   };
-
-  /**
-   * Adds an id for each file that's the relative path from the root.
-   *
-   * @param {File} file  The current file being processed.
-   */
-  function id(file) {
-    file.id = path.relative(config.root, file.path);
-  }
 
   /**
    * Mako dependencies hook that parses a JS file for `require` statements,
@@ -79,7 +66,7 @@ function plugin(options) {
     file.deps = Object.create(null);
 
     // find the list of refs, ignore any absolute urls or data-urls
-    var dependencies = deps(file.contents, 'css').filter(relativeRef);
+    var dependencies = deps(file.contents.toString(), 'css').filter(relativeRef);
 
     yield Promise.all(dependencies.map(function (dep) {
       return new Promise(function (accept, reject) {
@@ -93,11 +80,12 @@ function plugin(options) {
         debug('resolving %s from %s', dep, parent);
         resolve(dep, options, function (err, res, pkg) {
           if (err) return reject(err);
-          let child = relative(res);
-          debug('resolved %s -> %s from %s', dep, child, parent);
-          file.deps[dep] = path.relative(config.root, res);
+          debug('resolved %s -> %s from %s', dep, relative(res), relative(file.path));
           file.pkg = pkg;
-          file.addDependency(res);
+          let depFile = build.tree.findFile(res);
+          if (!depFile) depFile = build.tree.addFile({ base: file.base, path: res });
+          file.deps[dep] = depFile.id;
+          file.addDependency(depFile);
           accept();
         });
       });
@@ -124,18 +112,18 @@ function plugin(options) {
 
     // remove each dependant link
     file.dependants().forEach(function (dep) {
-      build.tree.removeDependency(dep, file.path);
+      build.tree.removeDependency(dep, file.id);
     });
 
     if (!root) {
       // anything other than the root should be removed
-      build.tree.removeFile(file.path);
+      build.tree.removeFile(file);
     } else {
       debug('packing %s', relative(file.path));
 
       let results = doPack(file, mapping, config.sourceMaps, config.sourceRoot);
-      file.contents = results.code;
-      file.sourcemap = results.map;
+      file.contents = new Buffer(results.code);
+      file.sourceMap = results.map;
 
       timer();
     }
@@ -158,12 +146,12 @@ function plugin(options) {
 
     // attach this file to each possible root
     roots.forEach(function (root) {
-      build.tree.addDependency(root, file.path);
+      root.addDependency(file);
     });
 
     // remove the link from the original dependants
     without(file.dependants(), roots).forEach(function (dep) {
-      build.tree.removeDependency(dep, file.path);
+      dep.removeDependency(file);
     });
   }
 
@@ -176,9 +164,9 @@ function plugin(options) {
   function prepare(file) {
     return {
       id: file.id,
-      source: file.contents,
+      source: file.contents ? file.contents.toString() : null,
       deps: file.deps || {},
-      entry: file.isEntry()
+      entry: isRoot(file)
     };
   }
 }
@@ -243,12 +231,9 @@ function getMapping(tree) {
  * @return {Boolean}
  */
 function isRoot(file) {
-  // short-circuit, an entry file is automatically considered a root
-  if (file.entry) return true;
-
   // if there are no dependants, this is assumed to be a root (this could
   // possibly be inferred from file.entry)
-  let dependants = file.dependants({ objects: true });
+  let dependants = file.dependants();
   if (dependants.length === 0) return true;
 
   // if any of the dependants are not css, (ie: html) this is a root.
@@ -262,9 +247,7 @@ function isRoot(file) {
  * @return {Array}
  */
 function findRoots(file) {
-  return file.dependants({ recursive: true, objects: true })
-    .filter(file => isRoot(file))
-    .map(file => file.path);
+  return file.dependants({ recursive: true }).filter(isRoot);
 }
 
 /**
@@ -277,14 +260,15 @@ function findRoots(file) {
  * @return {Object}
  */
 function doPack(file, mapping, sourceMaps, sourceRoot) {
-  let css = rework(file.contents, { source: file.id })
+  // console.log(mapping);
+  let css = rework(file.contents.toString(), { source: file.id })
     .use(customImport(mapping))
     .use(rewrite(function (url) {
       if (!relativeRef(url)) return url;
       let urlpath = url.split(/[?#]/)[0];
-      let entry = path.dirname(file.id);
       let dep = mapping[this.position.source].deps[urlpath];
-      return path.relative(entry, dep);
+      let depFile = file.tree.getFile(dep);
+      return path.relative(file.dirname, depFile.relative);
     }));
 
   let results = css.toString({

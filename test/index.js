@@ -9,7 +9,7 @@ let fs = require('fs');
 let mako = require('mako');
 let path = require('path');
 let stat = require('mako-stat');
-let text = require('mako-text');
+let buffer = require('mako-buffer');
 
 chai.use(require('chai-as-promised'));
 let assert = chai.assert;
@@ -23,8 +23,8 @@ describe('css plugin', function () {
       .use(plugins())
       .build(entry)
       .then(function (build) {
-        let file = build.tree.getFile(entry);
-        assert.strictEqual(file.contents.trim(), expected('simple'));
+        let file = build.tree.findFile(entry);
+        assert.strictEqual(file.contents.toString().trim(), expected('simple'));
       });
   });
 
@@ -35,8 +35,8 @@ describe('css plugin', function () {
       .use(plugins())
       .build(entry)
       .then(function (build) {
-        let file = build.tree.getFile(entry);
-        assert.strictEqual(file.contents.trim(), expected('nested'));
+        let file = build.tree.findFile(entry);
+        assert.strictEqual(file.contents.toString().trim(), expected('nested'));
       });
   });
 
@@ -59,8 +59,8 @@ describe('css plugin', function () {
       .use(plugins())
       .build(entry)
       .then(function (build) {
-        let file = build.tree.getFile(entry);
-        assert.strictEqual(file.contents.trim(), expected('modules'));
+        let file = build.tree.findFile(entry);
+        assert.strictEqual(file.contents.toString().trim(), expected('modules'));
       });
   });
 
@@ -71,8 +71,8 @@ describe('css plugin', function () {
       .use(plugins())
       .build(entry)
       .then(function (build) {
-        let file = build.tree.getFile(entry);
-        assert.strictEqual(file.contents.trim(), expected('modules-with-js'));
+        let file = build.tree.findFile(entry);
+        assert.strictEqual(file.contents.toString().trim(), expected('modules-with-js'));
       });
   });
 
@@ -83,8 +83,8 @@ describe('css plugin', function () {
       .use(plugins())
       .build(entry)
       .then(function (build) {
-        let file = build.tree.getFile(entry);
-        assert.strictEqual(file.contents.trim(), expected('modules-with-style'));
+        let file = build.tree.findFile(entry);
+        assert.strictEqual(file.contents.toString().trim(), expected('modules-with-style'));
       });
   });
 
@@ -96,8 +96,11 @@ describe('css plugin', function () {
       .use(plugins())
       .build(entry)
       .then(function (build) {
-        assert.isTrue(build.tree.hasFile(asset));
-        assert.isTrue(build.tree.hasDependency(entry, asset));
+        let entryFile = build.tree.findFile(entry);
+        let assetFile = build.tree.findFile(asset);
+        assert.isDefined(entryFile);
+        assert.isDefined(assetFile);
+        assert.isDefined(entryFile.hasDependency(assetFile));
       });
   });
 
@@ -109,8 +112,11 @@ describe('css plugin', function () {
       .use(plugins())
       .build(entry)
       .then(function (build) {
-        assert.isTrue(build.tree.hasFile(asset));
-        assert.isTrue(build.tree.hasDependency(entry, asset));
+        let entryFile = build.tree.findFile(entry);
+        let assetFile = build.tree.findFile(asset);
+        assert.isDefined(entryFile);
+        assert.isDefined(assetFile);
+        assert.isDefined(entryFile.hasDependency(assetFile));
       });
   });
 
@@ -122,8 +128,11 @@ describe('css plugin', function () {
       .use(plugins())
       .build(entry)
       .then(function (build) {
-        assert.isTrue(build.tree.hasFile(asset));
-        assert.isTrue(build.tree.hasDependency(entry, asset));
+        let entryFile = build.tree.findFile(entry);
+        let assetFile = build.tree.findFile(asset);
+        assert.isDefined(entryFile);
+        assert.isDefined(assetFile);
+        assert.isDefined(entryFile.hasDependency(assetFile));
       });
   });
 
@@ -134,8 +143,8 @@ describe('css plugin', function () {
       .use(plugins())
       .build(entry)
       .then(function (build) {
-        let file = build.tree.getFile(entry);
-        let path = deps(file.contents, 'css')[0];
+        let file = build.tree.findFile(entry);
+        let path = deps(file.contents.toString(), 'css')[0];
         assert.equal(path, 'lib/texture.png');
       });
   });
@@ -147,8 +156,8 @@ describe('css plugin', function () {
       .use(plugins())
       .build(entry)
       .then(function (build) {
-        let file = build.tree.getFile(entry);
-        assert.strictEqual(file.contents.trim(), expected('deep-assets'));
+        let file = build.tree.findFile(entry);
+        assert.strictEqual(file.contents.toString().trim(), expected('deep-assets'));
       });
   });
 
@@ -159,8 +168,8 @@ describe('css plugin', function () {
       .use(plugins())
       .build(entry)
       .then(function (build) {
-        let file = build.tree.getFile(entry);
-        assert.strictEqual(file.contents.trim(), expected('dependency-assets'));
+        let file = build.tree.findFile(entry);
+        assert.strictEqual(file.contents.toString().trim(), expected('dependency-assets'));
       });
   });
 
@@ -170,8 +179,8 @@ describe('css plugin', function () {
       .use(plugins())
       .build(entry)
       .then(function (build) {
-        let file = build.tree.getFile(entry);
-        assert.strictEqual(file.contents.trim(), expected('http'));
+        let file = build.tree.findFile(entry);
+        assert.strictEqual(file.contents.toString().trim(), expected('http'));
       });
   });
 
@@ -181,8 +190,8 @@ describe('css plugin', function () {
       .use(plugins())
       .build(entry)
       .then(function (build) {
-        let file = build.tree.getFile(entry);
-        assert.strictEqual(file.contents.trim(), expected('datauri'));
+        let file = build.tree.findFile(entry);
+        assert.strictEqual(file.contents.toString().trim(), expected('datauri'));
       });
   });
 
@@ -191,48 +200,45 @@ describe('css plugin', function () {
     let css = fixture('subentries/index.css');
 
     return mako()
-      .use(text([ 'txt' ]))
-      .dependencies('txt', function parseText(file) {
-        var filepath = path.resolve(path.dirname(file.path), file.contents.trim());
-        file.addDependency(filepath);
+      .use(buffer([ 'txt' ]))
+      .dependencies('txt', function parseText(file, build) {
+        let depPath = path.resolve(path.dirname(file.path), file.contents.toString().trim());
+        let depFile = build.tree.addFile(depPath);
+        file.addDependency(depFile);
       })
       .use(plugins())
       .build(entry)
       .then(function (build) {
-        let file = build.tree.getFile(css);
-        assert.strictEqual(file.contents.trim(), expected('subentries'));
+        let file = build.tree.findFile(css);
+        assert.strictEqual(file.contents.toString().trim(), expected('subentries'));
       });
   });
 
   context('with options', function () {
-    context('.root', function () {
-      // TODO
-    });
-
     context('.extensions', function () {
       it('should be able to resolve all the specified extensions', function () {
         let entry = fixture('extensions/index.css');
         return mako()
-          .use([ stat('less'), text('less') ])
+          .use([ stat('less'), buffer('less') ])
           .postread('less', file => file.type = 'css')
           .use(plugins({ extensions: [ '.less' ] }))
           .build(entry)
           .then(function (build) {
-            let file = build.tree.getFile(entry);
-            assert.strictEqual(file.contents.trim(), expected('extensions'));
+            let file = build.tree.findFile(entry);
+            assert.strictEqual(file.contents.toString().trim(), expected('extensions'));
           });
       });
 
       it('should be able to flatten the specified list', function () {
         let entry = fixture('extensions/index.css');
         return mako()
-          .use([ stat('less'), text('less') ])
+          .use([ stat('less'), buffer('less') ])
           .postread('less', file => file.type = 'css')
           .use(plugins({ extensions: '.less' }))
           .build(entry)
           .then(function (build) {
-            let file = build.tree.getFile(entry);
-            assert.strictEqual(file.contents.trim(), expected('extensions'));
+            let file = build.tree.findFile(entry);
+            assert.strictEqual(file.contents.toString().trim(), expected('extensions'));
           });
       });
     });
@@ -245,8 +251,8 @@ describe('css plugin', function () {
           .use(plugins({ resolveOptions: { moduleDirectory: 'npm' } }))
           .build(entry)
           .then(function (build) {
-            let file = build.tree.getFile(entry);
-            assert.strictEqual(file.contents.trim(), expected('modules-alt-dir'));
+            let file = build.tree.findFile(entry);
+            assert.strictEqual(file.contents.toString().trim(), expected('modules-alt-dir'));
           });
       });
     });
@@ -259,7 +265,7 @@ describe('css plugin', function () {
           .use(plugins({ sourceMaps: true }))
           .build(entry)
           .then(function (build) {
-            let file = build.tree.getFile(entry);
+            let file = build.tree.findFile(entry);
             assert(convert.fromObject(file.sourcemap), 'expected valid source-map object');
           });
       });
@@ -276,7 +282,7 @@ describe('css plugin', function () {
 function plugins(options) {
   return [
     stat('css'),
-    text('css'),
+    buffer('css'),
     css(options)
   ];
 }

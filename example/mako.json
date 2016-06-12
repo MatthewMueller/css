@@ -2,9 +2,9 @@
   "entries": [ "index.html", "index.css" ],
   "plugins": [
     [ "mako-stat", [ "html", "css" ] ],
-    [ "mako-text", "css" ],
+    [ "mako-buffer", "css" ],
     [ "..", { "sourceMaps": true, "root": ".." } ],
-    [ "mako-sourcemaps", [ "css" ] ],
+    [ "mako-sourcemaps", "css", { "inline": true } ],
     [ "mako-output", [ "html", "css", "map" ] ],
     [ "mako-copy", "html" ],
     [ "mako-write", [ "css", "map" ] ]
