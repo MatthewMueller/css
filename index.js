@@ -84,7 +84,7 @@ function plugin(options) {
           file.pkg = pkg;
           let depFile = build.tree.findFile(res);
           if (!depFile) depFile = build.tree.addFile({ base: file.base, path: res });
-          file.deps[dep] = depFile.id;
+          file.deps[dep] = depFile.relative;
           file.addDependency(depFile);
           accept();
         });
@@ -108,7 +108,7 @@ function plugin(options) {
     let root = isRoot(file);
 
     // add this file to the mapping
-    mapping[file.id] = prepare(file);
+    mapping[id(file)] = prepare(file);
 
     // remove each dependant link
     file.dependants().forEach(function (dep) {
@@ -142,7 +142,7 @@ function plugin(options) {
     let roots = findRoots(file);
 
     // add this file to the mapping
-    mapping[file.id] = prepare(file);
+    mapping[id(file)] = prepare(file);
 
     // attach this file to each possible root
     roots.forEach(function (root) {
@@ -163,7 +163,7 @@ function plugin(options) {
    */
   function prepare(file) {
     return {
-      id: file.id,
+      id: id(file),
       source: file.contents ? file.contents.toString() : null,
       deps: file.deps || {},
       entry: isRoot(file)
@@ -261,14 +261,13 @@ function findRoots(file) {
  */
 function doPack(file, mapping, sourceMaps, sourceRoot) {
   // console.log(mapping);
-  let css = rework(file.contents.toString(), { source: file.id })
+  let css = rework(file.contents.toString(), { source: id(file) })
     .use(customImport(mapping))
     .use(rewrite(function (url) {
       if (!relativeRef(url)) return url;
       let urlpath = url.split(/[?#]/)[0];
       let dep = mapping[this.position.source].deps[urlpath];
-      let depFile = file.tree.getFile(dep);
-      return path.relative(file.dirname, depFile.relative);
+      return path.relative(file.dirname, dep);
     }));
 
   let results = css.toString({
@@ -283,4 +282,15 @@ function doPack(file, mapping, sourceMaps, sourceRoot) {
     code: results.code,
     map: sourceMaps ? map.toObject() : null
   };
+}
+
+/**
+ * Helper for generating a source ID that's human-friendly and compatible with
+ * rework.
+ *
+ * @param {File} file  The file to get the "id" from.
+ * @return {String}
+ */
+function id(file) {
+  return path.relative(file.base, file.initialPath);
 }
