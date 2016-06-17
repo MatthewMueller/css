@@ -1,13 +1,16 @@
 sudo: false
 language: node_js
 node_js:
-- stable
-- 4
-install: npm update
-after_success: npm run coveralls
+  - stable
+  - 4
+install:
+  - npm prune
+  - npm update
+after_success:
+  - npm run coveralls
 cache:
   directories:
-  - node_modules
+    - node_modules
 deploy:
   provider: npm
   email: dominic@dbarnes.info
