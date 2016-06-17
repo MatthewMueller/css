@@ -83,7 +83,7 @@ function plugin(options) {
           debug('resolved %s -> %s from %s', dep, relative(res), relative(file.path));
           file.pkg = pkg;
           let depFile = build.tree.findFile(res);
-          if (!depFile) depFile = build.tree.addFile({ base: file.base, path: res });
+          if (!depFile) depFile = build.tree.addFile(res);
           file.deps[dep] = depFile.relative;
           file.addDependency(depFile);
           accept();
