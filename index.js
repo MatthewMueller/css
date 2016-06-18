@@ -4,7 +4,7 @@
 let convert = require('convert-source-map');
 let customImport = require('rework-custom-import');
 let debug = require('debug')('mako-css');
-let deps = require('file-deps');
+let deps = require('cssdeps');
 let flatten = require('array-flatten');
 let isUrl = require('is-url');
 let isDataUri = require('is-datauri');
@@ -15,6 +15,7 @@ let rewrite = require('rework-plugin-url');
 let strip = require('strip-extension');
 let without = require('array-without');
 let relative = require('relative');
+let url = require('url');
 
 // default plugin configuration
 const defaults = {
@@ -66,14 +67,15 @@ function plugin(options) {
     file.deps = Object.create(null);
 
     // find the list of refs, ignore any absolute urls or data-urls
-    var dependencies = deps(file.contents.toString(), 'css').filter(relativeRef);
+    var dependencies = deps(file.contents.toString()).filter(relativeRef);
 
     yield Promise.all(dependencies.map(function (dep) {
       return new Promise(function (accept, reject) {
         let options = extend(config.resolveOptions, {
           filename: file.path,
           extensions: flatten([ '.css', config.extensions ]),
-          packageFilter: packageFilter
+          packageFilter: packageFilter,
+          pathFilter: pathFilter
         });
 
         let parent = relative(file.path);
@@ -265,8 +267,7 @@ function doPack(file, mapping, sourceMaps, sourceRoot) {
     .use(customImport(mapping))
     .use(rewrite(function (url) {
       if (!relativeRef(url)) return url;
-      let urlpath = url.split(/[?#]/)[0];
-      let dep = mapping[this.position.source].deps[urlpath];
+      let dep = mapping[this.position.source].deps[url];
       return path.relative(file.dirname, dep);
     }));
 
@@ -293,4 +294,17 @@ function doPack(file, mapping, sourceMaps, sourceRoot) {
  */
 function id(file) {
   return path.relative(file.base, file.initialPath);
+}
+
+/**
+ * Strip querystring and hash from path before attempting to resolve.
+ * @see resolve documentation
+ *
+ * @param {Object} pkg  The package meta.
+ * @param {String} abs  The absolute path being resolved.
+ * @param {String} rel  The relative path being resolved.
+ * @return {String}
+ */
+function pathFilter(pkg, abs, rel) {
+  return url.parse(rel).pathname;
 }

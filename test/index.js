@@ -4,7 +4,7 @@
 let chai = require('chai');
 let convert = require('convert-source-map');
 let css = require('..');
-let deps = require('file-deps');
+let deps = require('cssdeps');
 let fs = require('fs');
 let mako = require('mako');
 let path = require('path');
@@ -100,7 +100,7 @@ describe('css plugin', function () {
         let assetFile = build.tree.findFile(asset);
         assert.isDefined(entryFile);
         assert.isDefined(assetFile);
-        assert.isDefined(entryFile.hasDependency(assetFile));
+        assert.isTrue(entryFile.hasDependency(assetFile));
       });
   });
 
@@ -116,7 +116,27 @@ describe('css plugin', function () {
         let assetFile = build.tree.findFile(asset);
         assert.isDefined(entryFile);
         assert.isDefined(assetFile);
-        assert.isDefined(entryFile.hasDependency(assetFile));
+        assert.isTrue(entryFile.hasDependency(assetFile));
+      });
+  });
+
+  it('should work with multiple backgrounds', function () {
+    let entry = fixture('assets-multi/index.css');
+    let asset1 = fixture('assets-multi/texture1.png');
+    let asset2 = fixture('assets-multi/texture2.png');
+
+    return mako()
+      .use(plugins())
+      .build(entry)
+      .then(function (build) {
+        let entryFile = build.tree.findFile(entry);
+        let asset1File = build.tree.findFile(asset1);
+        let asset2File = build.tree.findFile(asset2);
+        assert.isDefined(entryFile);
+        assert.isDefined(asset1File);
+        assert.isDefined(asset2File);
+        assert.isTrue(entryFile.hasDependency(asset1File));
+        assert.isTrue(entryFile.hasDependency(asset2File));
       });
   });
 
@@ -132,7 +152,7 @@ describe('css plugin', function () {
         let assetFile = build.tree.findFile(asset);
         assert.isDefined(entryFile);
         assert.isDefined(assetFile);
-        assert.isDefined(entryFile.hasDependency(assetFile));
+        assert.isTrue(entryFile.hasDependency(assetFile));
       });
   });
 
@@ -144,7 +164,7 @@ describe('css plugin', function () {
       .build(entry)
       .then(function (build) {
         let file = build.tree.findFile(entry);
-        let path = deps(file.contents.toString(), 'css')[0];
+        let path = deps(file.contents.toString())[0];
         assert.equal(path, 'lib/texture.png');
       });
   });
