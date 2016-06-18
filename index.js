@@ -2,9 +2,9 @@
 'use strict';
 
 let convert = require('convert-source-map');
+let cssdeps = require('cssdeps');
 let customImport = require('rework-custom-import');
 let debug = require('debug')('mako-css');
-let deps = require('cssdeps');
 let flatten = require('array-flatten');
 let isUrl = require('is-url');
 let isDataUri = require('is-datauri');
@@ -65,11 +65,11 @@ function plugin(options) {
     let timer = build.time('css:resolve');
 
     file.deps = Object.create(null);
+    var deps = cssdeps(file.contents.toString()).filter(relativeRef);
+    debug('%d dependencies found for %s:', deps.length, relative(file.path));
+    deps.forEach(dep => debug('> %s', dep));
 
-    // find the list of refs, ignore any absolute urls or data-urls
-    var dependencies = deps(file.contents.toString()).filter(relativeRef);
-
-    yield Promise.all(dependencies.map(function (dep) {
+    yield Promise.all(deps.map(function (dep) {
       return new Promise(function (accept, reject) {
         let options = extend(config.resolveOptions, {
           filename: file.path,
