@@ -1,4 +1,10 @@
 
+0.16.1 / 2016-06-17
+===================
+
+  * switching parser to cssdeps (fixes #36)
+  * update remaining dev deps
+
 0.16.0 / 2016-06-17
 ===================
 
