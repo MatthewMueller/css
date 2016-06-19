@@ -1,22 +1,22 @@
 
-'use strict';
+'use strict'
 
-let convert = require('convert-source-map');
-let cssdeps = require('cssdeps');
-let customImport = require('rework-custom-import');
-let debug = require('debug')('mako-css');
-let flatten = require('array-flatten');
-let isUrl = require('is-url');
-let isDataUri = require('is-datauri');
-let path = require('path');
-let Promise = require('bluebird');
-let resolve = require('browser-resolve');
-let rework = require('rework');
-let rewrite = require('rework-plugin-url');
-let strip = require('strip-extension');
-let without = require('array-without');
-let relative = require('relative');
-let url = require('url');
+let convert = require('convert-source-map')
+let cssdeps = require('cssdeps')
+let customImport = require('rework-custom-import')
+let debug = require('debug')('mako-css')
+let flatten = require('array-flatten')
+let isUrl = require('is-url')
+let isDataUri = require('is-datauri')
+let path = require('path')
+let Promise = require('bluebird')
+let resolve = require('browser-resolve')
+let rework = require('rework')
+let rewrite = require('rework-plugin-url')
+let strip = require('strip-extension')
+let without = require('array-without')
+let relative = require('relative')
+let url = require('url')
 
 // default plugin configuration
 const defaults = {
@@ -24,17 +24,17 @@ const defaults = {
   resolveOptions: null,
   sourceMaps: false,
   sourceRoot: 'file://mako'
-};
+}
 
 // memory-efficient way of tracking mappings per-build
-const mappings = new WeakMap();
+const mappings = new WeakMap()
 
 // export the plugin fn as the primary export
-exports = module.exports = plugin;
+exports = module.exports = plugin
 
 // add the images/fonts extensions lists as secondary exports
-exports.images = [ 'bmp', 'gif', 'jpg', 'jpeg', 'png', 'svg' ];
-exports.fonts = [ 'eot', 'otf', 'ttf', 'woff', 'woff2' ];
+exports.images = [ 'bmp', 'gif', 'jpg', 'jpeg', 'png', 'svg' ]
+exports.fonts = [ 'eot', 'otf', 'ttf', 'woff', 'woff2' ]
 
 /**
  * Initialize the mako js plugin.
@@ -45,15 +45,15 @@ exports.fonts = [ 'eot', 'otf', 'ttf', 'woff', 'woff2' ];
  * @param {Object} options  Configuration.
  * @return {Function}
  */
-function plugin(options) {
-  debug('initialize %j', options);
-  let config = extend(defaults, options);
+function plugin (options) {
+  debug('initialize %j', options)
+  let config = extend(defaults, options)
 
   return function (mako) {
-    mako.dependencies('css', npm);
-    mako.postdependencies('css', pack);
-    mako.postdependencies([ plugin.images, plugin.fonts ], move);
-  };
+    mako.dependencies('css', npm)
+    mako.postdependencies('css', pack)
+    mako.postdependencies([ plugin.images, plugin.fonts ], move)
+  }
 
   /**
    * Mako dependencies hook that parses a JS file for `require` statements,
@@ -62,13 +62,13 @@ function plugin(options) {
    * @param {File} file    The current file being processed.
    * @param {Build} build  The mako builder instance.
    */
-  function* npm(file, build) {
-    let timer = build.time('css:resolve');
+  function * npm (file, build) {
+    let timer = build.time('css:resolve')
 
-    file.deps = Object.create(null);
-    var deps = cssdeps(file.contents.toString()).filter(relativeRef);
-    debug('%d dependencies found for %s:', deps.length, relative(file.path));
-    deps.forEach(dep => debug('> %s', dep));
+    file.deps = Object.create(null)
+    var deps = cssdeps(file.contents.toString()).filter(relativeRef)
+    debug('%d dependencies found for %s:', deps.length, relative(file.path))
+    deps.forEach(dep => debug('> %s', dep))
 
     yield Promise.map(deps, function (dep) {
       return Promise.fromCallback(function (done) {
@@ -77,24 +77,24 @@ function plugin(options) {
           extensions: flatten([ '.css', config.extensions ]),
           packageFilter: packageFilter,
           pathFilter: pathFilter
-        });
+        })
 
-        let parent = relative(file.path);
-        debug('resolving %s from %s', dep, parent);
+        let parent = relative(file.path)
+        debug('resolving %s from %s', dep, parent)
         resolve(dep, options, function (err, res, pkg) {
-          if (err) return done(err);
-          debug('resolved %s -> %s from %s', dep, relative(res), relative(file.path));
-          file.pkg = pkg;
-          let depFile = build.tree.findFile(res);
-          if (!depFile) depFile = build.tree.addFile(res);
-          file.deps[dep] = depFile.relative;
-          file.addDependency(depFile);
-          done();
-        });
-      });
-    });
+          if (err) return done(err)
+          debug('resolved %s -> %s from %s', dep, relative(res), relative(file.path))
+          file.pkg = pkg
+          let depFile = build.tree.findFile(res)
+          if (!depFile) depFile = build.tree.addFile(res)
+          file.deps[dep] = depFile.relative
+          file.addDependency(depFile)
+          done()
+        })
+      })
+    })
 
-    timer();
+    timer()
   }
 
   /**
@@ -104,31 +104,31 @@ function plugin(options) {
    * @param {File} file    The current file being processed.
    * @param {Build} build  The current build.
    */
-  function pack(file, build) {
-    let timer = build.time('css:pack');
+  function pack (file, build) {
+    let timer = build.time('css:pack')
 
-    let mapping = getMapping(build.tree);
-    let root = isRoot(file);
+    let mapping = getMapping(build.tree)
+    let root = isRoot(file)
 
     // add this file to the mapping
-    mapping[id(file)] = prepare(file);
+    mapping[id(file)] = prepare(file)
 
     // remove each dependant link
     file.dependants().forEach(function (dep) {
-      build.tree.removeDependency(dep, file.id);
-    });
+      build.tree.removeDependency(dep, file.id)
+    })
 
     if (!root) {
       // anything other than the root should be removed
-      build.tree.removeFile(file);
+      build.tree.removeFile(file)
     } else {
-      debug('packing %s', relative(file.path));
+      debug('packing %s', relative(file.path))
 
-      let results = doPack(file, mapping, config.sourceMaps, config.sourceRoot);
-      file.contents = new Buffer(results.code);
-      file.sourceMap = results.map;
+      let results = doPack(file, mapping, config.sourceMaps, config.sourceRoot)
+      file.contents = new Buffer(results.code)
+      file.sourceMap = results.map
 
-      timer();
+      timer()
     }
   }
 
@@ -140,22 +140,22 @@ function plugin(options) {
    * @param {File} file    The current file being processed.
    * @param {Build} build  The current build.
    */
-  function move(file, build) {
-    let mapping = getMapping(build.tree);
-    let roots = findRoots(file);
+  function move (file, build) {
+    let mapping = getMapping(build.tree)
+    let roots = findRoots(file)
 
     // add this file to the mapping
-    mapping[id(file)] = prepare(file);
+    mapping[id(file)] = prepare(file)
 
     // attach this file to each possible root
     roots.forEach(function (root) {
-      root.addDependency(file);
-    });
+      root.addDependency(file)
+    })
 
     // remove the link from the original dependants
     without(file.dependants(), roots).forEach(function (dep) {
-      dep.removeDependency(file);
-    });
+      dep.removeDependency(file)
+    })
   }
 
   /**
@@ -164,13 +164,13 @@ function plugin(options) {
    * @param {File} file      The current file being processed.
    * @return {Object}
    */
-  function prepare(file) {
+  function prepare (file) {
     return {
       id: id(file),
       source: file.contents ? file.contents.toString() : null,
       deps: file.deps || {},
       entry: isRoot(file)
-    };
+    }
   }
 }
 
@@ -180,10 +180,10 @@ function plugin(options) {
  *
  * @return {Object}
  */
-function extend() {
-  var sources = [].slice.call(arguments);
-  var args = [ Object.create(null) ].concat(sources);
-  return Object.assign.apply(null, args);
+function extend () {
+  var sources = [].slice.call(arguments)
+  var args = [ Object.create(null) ].concat(sources)
+  return Object.assign.apply(null, args)
 }
 
 /**
@@ -192,13 +192,13 @@ function extend() {
  * @param {Object} pkg package object
  * @return {Object}
  */
-function packageFilter(pkg) {
+function packageFilter (pkg) {
   if (pkg.style) {
-    pkg.main = pkg.style;
+    pkg.main = pkg.style
   } else if (pkg.main) {
-    pkg.main = strip(pkg.main);
+    pkg.main = strip(pkg.main)
   }
-  return pkg;
+  return pkg
 }
 
 /**
@@ -208,8 +208,8 @@ function packageFilter(pkg) {
  * @param {String} ref  The reference to examine.
  * @return {Boolean}
  */
-function relativeRef(ref) {
-  return !isUrl(ref) && !isDataUri(ref);
+function relativeRef (ref) {
+  return !isUrl(ref) && !isDataUri(ref)
 }
 
 /**
@@ -218,12 +218,12 @@ function relativeRef(ref) {
  * @param {Tree} tree  The build tree to use as the key.
  * @return {Object}
  */
-function getMapping(tree) {
+function getMapping (tree) {
   if (!mappings.has(tree)) {
-    mappings.set(tree, Object.create(null));
+    mappings.set(tree, Object.create(null))
   }
 
-  return mappings.get(tree);
+  return mappings.get(tree)
 }
 
 /**
@@ -233,14 +233,14 @@ function getMapping(tree) {
  * @param {File} file  The file to examine.
  * @return {Boolean}
  */
-function isRoot(file) {
+function isRoot (file) {
   // if there are no dependants, this is assumed to be a root (this could
   // possibly be inferred from file.entry)
-  let dependants = file.dependants();
-  if (dependants.length === 0) return true;
+  let dependants = file.dependants()
+  if (dependants.length === 0) return true
 
   // if any of the dependants are not css, (ie: html) this is a root.
-  return dependants.some(file => file.type !== 'css');
+  return dependants.some(file => file.type !== 'css')
 }
 
 /**
@@ -249,8 +249,8 @@ function isRoot(file) {
  * @param {File} file  The file to search from.
  * @return {Array}
  */
-function findRoots(file) {
-  return file.dependants({ recursive: true }).filter(isRoot);
+function findRoots (file) {
+  return file.dependants({ recursive: true }).filter(isRoot)
 }
 
 /**
@@ -262,28 +262,28 @@ function findRoots(file) {
  * @param {String} sourceRoot  The sourceRoot config option
  * @return {Object}
  */
-function doPack(file, mapping, sourceMaps, sourceRoot) {
-  // console.log(mapping);
+function doPack (file, mapping, sourceMaps, sourceRoot) {
+  // console.log(mapping)
   let css = rework(file.contents.toString(), { source: id(file) })
     .use(customImport(mapping))
     .use(rewrite(function (url) {
-      if (!relativeRef(url)) return url;
-      let dep = mapping[this.position.source].deps[url];
-      return path.relative(file.dirname, dep);
-    }));
+      if (!relativeRef(url)) return url
+      let dep = mapping[this.position.source].deps[url]
+      return path.relative(file.dirname, dep)
+    }))
 
   let results = css.toString({
     sourcemap: true,
     sourcemapAsObject: true
-  });
+  })
 
-  let map = convert.fromObject(results.map);
-  map.setProperty('sourceRoot', sourceRoot);
+  let map = convert.fromObject(results.map)
+  map.setProperty('sourceRoot', sourceRoot)
 
   return {
     code: results.code,
     map: sourceMaps ? map.toObject() : null
-  };
+  }
 }
 
 /**
@@ -293,8 +293,8 @@ function doPack(file, mapping, sourceMaps, sourceRoot) {
  * @param {File} file  The file to get the "id" from.
  * @return {String}
  */
-function id(file) {
-  return path.relative(file.base, file.initialPath);
+function id (file) {
+  return path.relative(file.base, file.initialPath)
 }
 
 /**
@@ -306,6 +306,6 @@ function id(file) {
  * @param {String} rel  The relative path being resolved.
  * @return {String}
  */
-function pathFilter(pkg, abs, rel) {
-  return url.parse(rel).pathname;
+function pathFilter (pkg, abs, rel) {
+  return url.parse(rel).pathname
 }
