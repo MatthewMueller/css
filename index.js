@@ -9,6 +9,7 @@ let flatten = require('array-flatten');
 let isUrl = require('is-url');
 let isDataUri = require('is-datauri');
 let path = require('path');
+let Promise = require('bluebird');
 let resolve = require('browser-resolve');
 let rework = require('rework');
 let rewrite = require('rework-plugin-url');
@@ -69,8 +70,8 @@ function plugin(options) {
     debug('%d dependencies found for %s:', deps.length, relative(file.path));
     deps.forEach(dep => debug('> %s', dep));
 
-    yield Promise.all(deps.map(function (dep) {
-      return new Promise(function (accept, reject) {
+    yield Promise.map(deps, function (dep) {
+      return Promise.fromCallback(function (done) {
         let options = extend(config.resolveOptions, {
           filename: file.path,
           extensions: flatten([ '.css', config.extensions ]),
@@ -81,17 +82,17 @@ function plugin(options) {
         let parent = relative(file.path);
         debug('resolving %s from %s', dep, parent);
         resolve(dep, options, function (err, res, pkg) {
-          if (err) return reject(err);
+          if (err) return done(err);
           debug('resolved %s -> %s from %s', dep, relative(res), relative(file.path));
           file.pkg = pkg;
           let depFile = build.tree.findFile(res);
           if (!depFile) depFile = build.tree.addFile(res);
           file.deps[dep] = depFile.relative;
           file.addDependency(depFile);
-          accept();
+          done();
         });
       });
-    }));
+    });
 
     timer();
   }
