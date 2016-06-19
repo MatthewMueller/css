@@ -1,4 +1,10 @@
 
+0.16.4 / 2016-06-19
+===================
+
+  * format existing code using standard
+  * switch to standard for linting
+
 0.16.3 / 2016-06-18
 ===================
 
