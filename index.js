@@ -2,7 +2,7 @@
 'use strict'
 
 let convert = require('convert-source-map')
-let cssdeps = require('cssdeps')
+let cssdeps = require('@dominicbarnes/cssdeps')
 let customImport = require('rework-custom-import')
 let debug = require('debug')('mako-css')
 let flatten = require('array-flatten')
@@ -66,7 +66,7 @@ function plugin (options) {
     let timer = build.time('css:resolve')
 
     file.deps = Object.create(null)
-    var deps = cssdeps(file.contents.toString()).filter(relativeRef)
+    var deps = cssdeps(file.contents.toString(), { source: file.relative }).filter(relativeRef)
     debug('%d dependencies found for %s:', deps.length, relative(file.path))
     deps.forEach(dep => debug('> %s', dep))
 
