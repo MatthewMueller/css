@@ -105,7 +105,7 @@ describe('css plugin', function () {
       })
   })
 
-  it('should work with query parameters', function () {
+  it('should find assets with query parameters', function () {
     let entry = fixture('assets-query/index.css')
     let asset = fixture('assets-query/texture.png')
 
@@ -121,7 +121,7 @@ describe('css plugin', function () {
       })
   })
 
-  it('should work with multiple backgrounds', function () {
+  it('should find assets in multiple backgrounds', function () {
     let entry = fixture('assets-multi/index.css')
     let asset1 = fixture('assets-multi/texture1.png')
     let asset2 = fixture('assets-multi/texture2.png')
@@ -141,7 +141,23 @@ describe('css plugin', function () {
       })
   })
 
-  it('should move assets linked to dependencies to the entry file', function () {
+  it('should find assets linked to the entry file', function () {
+    let entry = fixture('assets-custom-syntax/index.css')
+    let asset = fixture('assets-custom-syntax/texture.png')
+
+    return mako()
+      .use(plugins())
+      .build(entry)
+      .then(function (build) {
+        let entryFile = build.tree.findFile(entry)
+        let assetFile = build.tree.findFile(asset)
+        assert.isDefined(entryFile)
+        assert.isDefined(assetFile)
+        assert.isTrue(entryFile.hasDependency(assetFile))
+      })
+  })
+
+  it('should move assets to the entry file', function () {
     let entry = fixture('nested-assets/index.css')
     let asset = fixture('nested-assets/lib/texture.png')
 
@@ -232,6 +248,18 @@ describe('css plugin', function () {
       .then(function (build) {
         let file = build.tree.findFile(css)
         assert.strictEqual(file.contents.toString().trim(), expected('subentries'))
+      })
+  })
+
+  it('should include the filename during parse errors', function () {
+    let root = fixture('syntax-error')
+    let entry = fixture('syntax-error/index.css')
+
+    return mako({ root })
+      .use(plugins())
+      .build(entry)
+      .catch(function (err) {
+        assert.include(err.message, 'index.css')
       })
   })
 
