@@ -1,4 +1,10 @@
 
+0.16.5 / 2016-06-22
+===================
+
+  * switching to temporary fork of cssdeps, getting test cases passing
+  * adding test cases for failing syntax
+
 0.16.4 / 2016-06-19
 ===================
 
