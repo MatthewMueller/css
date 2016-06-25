@@ -123,11 +123,7 @@ function plugin (options) {
       build.tree.removeFile(file)
     } else {
       debug('packing %s', relative(file.path))
-
-      let results = doPack(file, mapping, config.sourceMaps, config.sourceRoot)
-      file.contents = new Buffer(results.code)
-      file.sourceMap = results.map
-
+      doPack(file, mapping, config.sourceMaps, config.sourceRoot)
       timer()
     }
   }
@@ -268,10 +264,8 @@ function doPack (file, mapping, sourceMaps, sourceRoot) {
   let map = convert.fromObject(results.map)
   map.setProperty('sourceRoot', sourceRoot)
 
-  return {
-    code: results.code,
-    map: sourceMaps ? map.toObject() : null
-  }
+  file.contents = new Buffer(results.code)
+  file.sourceMap = sourceMaps ? map.toObject() : null
 }
 
 /**
