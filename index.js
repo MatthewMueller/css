@@ -47,7 +47,7 @@ exports.fonts = [ 'eot', 'otf', 'ttf', 'woff', 'woff2' ]
  */
 function plugin (options) {
   debug('initialize %j', options)
-  let config = extend(defaults, options)
+  let config = Object.assign({}, defaults, options)
 
   return function (mako) {
     mako.dependencies('css', npm)
@@ -72,7 +72,7 @@ function plugin (options) {
 
     yield Promise.map(deps, function (dep) {
       return Promise.fromCallback(function (done) {
-        let options = extend(config.resolveOptions, {
+        let options = Object.assign({}, config.resolveOptions, {
           filename: file.path,
           extensions: flatten([ '.css', config.extensions ]),
           packageFilter: packageFilter,
@@ -172,18 +172,6 @@ function plugin (options) {
       entry: isRoot(file)
     }
   }
-}
-
-/**
- * Helper for generating objects. The returned value is always a fresh object
- * with all arguments assigned as sources.
- *
- * @return {Object}
- */
-function extend () {
-  var sources = [].slice.call(arguments)
-  var args = [ Object.create(null) ].concat(sources)
-  return Object.assign.apply(null, args)
 }
 
 /**
