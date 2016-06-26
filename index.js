@@ -114,9 +114,7 @@ function plugin (options) {
     mapping[id(file)] = prepare(file)
 
     // remove each dependant link
-    file.dependants().forEach(function (dep) {
-      build.tree.removeDependency(dep, file.id)
-    })
+    file.dependants().forEach(dep => build.tree.removeDependency(dep, file.id))
 
     if (!root) {
       // anything other than the root should be removed
@@ -144,14 +142,10 @@ function plugin (options) {
     mapping[id(file)] = prepare(file)
 
     // attach this file to each possible root
-    roots.forEach(function (root) {
-      root.addDependency(file)
-    })
+    roots.forEach(root => root.addDependency(file))
 
     // remove the link from the original dependants
-    without(file.dependants(), roots).forEach(function (dep) {
-      dep.removeDependency(file)
-    })
+    without(file.dependants(), roots).forEach(dep => dep.removeDependency(file))
   }
 
   /**
@@ -247,7 +241,6 @@ function findRoots (file) {
  * @return {Object}
  */
 function doPack (file, mapping, sourceMaps, sourceRoot) {
-  // console.log(mapping)
   let css = rework(file.contents.toString(), { source: id(file) })
     .use(customImport(mapping))
     .use(rewrite(function (url) {
