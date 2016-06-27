@@ -15,7 +15,7 @@ let rework = require('rework')
 let rewrite = require('rework-plugin-url')
 let strip = require('strip-extension')
 let without = require('array-without')
-let relative = require('relative')
+let relative = require('cwp')
 let url = require('url')
 
 // default plugin configuration
