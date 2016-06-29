@@ -16,8 +16,7 @@ let rewrite = require('rework-plugin-url')
 let strip = require('strip-extension')
 let without = require('array-without')
 let url = require('url')
-
-const relative = path.relative.bind(path, process.cwd())
+let utils = require('mako-utils')
 
 // default plugin configuration
 const defaults = {
@@ -68,7 +67,7 @@ function plugin (options) {
 
     file.deps = Object.create(null)
     var deps = cssdeps(file.contents.toString(), { source: file.relative }).filter(relativeRef)
-    debug('%d dependencies found for %s:', deps.length, relative(file.path))
+    debug('%d dependencies found for %s:', deps.length, utils.relative(file.path))
     deps.forEach(dep => debug('> %s', dep))
 
     yield Promise.map(deps, function (dep) {
@@ -80,11 +79,11 @@ function plugin (options) {
           pathFilter: pathFilter
         })
 
-        let parent = relative(file.path)
+        let parent = utils.relative(file.path)
         debug('resolving %s from %s', dep, parent)
         resolve(dep, options, function (err, res, pkg) {
           if (err) return done(err)
-          debug('resolved %s -> %s from %s', dep, relative(res), relative(file.path))
+          debug('resolved %s -> %s from %s', dep, utils.relative(res), utils.relative(file.path))
           file.pkg = pkg
           let depFile = build.tree.findFile(res)
           if (!depFile) depFile = build.tree.addFile(res)
@@ -121,7 +120,7 @@ function plugin (options) {
       // anything other than the root should be removed
       build.tree.removeFile(file)
     } else {
-      debug('packing %s', relative(file.path))
+      debug('packing %s', utils.relative(file.path))
       doPack(file, mapping, config.sourceMaps, config.sourceRoot)
       timer()
     }
