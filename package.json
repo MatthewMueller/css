@@ -41,7 +41,7 @@
     "mako-sourcemaps": "^0.4.0",
     "mako-stat": "^0.11.0",
     "mako-write": "^0.10.0",
-    "mocha": "^2.3.0",
+    "mocha": "^3.0.0",
     "normalize.css": "^4.1.1",
     "standard": "^7.1.2"
   },
