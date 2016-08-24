@@ -43,7 +43,7 @@
     "mako-write": "^0.10.0",
     "mocha": "^3.0.0",
     "normalize.css": "^4.1.1",
-    "standard": "^7.1.2"
+    "standard": "^8.0.0"
   },
   "scripts": {
     "lint": "standard",
