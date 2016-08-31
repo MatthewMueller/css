@@ -1,4 +1,14 @@
 
+0.16.10 / 2016-08-31
+====================
+
+  * chore(package): update mako-utils to version 0.1.0
+  * chore(package): update standard to version 8.0.0 (#58)
+  * chore(package): update mocha to version 3.0.0
+  * example: back to external source maps
+  * chore(package): update mako-serve to version 0.14.1
+  * adding code style badge
+
 0.16.9 / 2016-06-29
 ===================
 
