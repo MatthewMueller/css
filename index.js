@@ -63,8 +63,6 @@ function plugin (options) {
    * @param {Build} build  The mako builder instance.
    */
   function * npm (file, build) {
-    let timer = build.time('css:resolve')
-
     file.deps = Object.create(null)
     var deps = cssdeps(file.contents.toString(), { source: file.relative }).filter(relativeRef)
     debug('%d dependencies found for %s:', deps.length, utils.relative(file.path))
@@ -93,8 +91,6 @@ function plugin (options) {
         })
       })
     })
-
-    timer()
   }
 
   /**
@@ -105,8 +101,6 @@ function plugin (options) {
    * @param {Build} build  The current build.
    */
   function pack (file, build) {
-    let timer = build.time('css:pack')
-
     let mapping = getMapping(build.tree)
     let root = isRoot(file)
 
@@ -122,7 +116,6 @@ function plugin (options) {
     } else {
       debug('packing %s', utils.relative(file.path))
       doPack(file, mapping, config.sourceMaps, config.sourceRoot)
-      timer()
     }
   }
 
