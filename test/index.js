@@ -9,8 +9,6 @@ let deps = require('@dominicbarnes/cssdeps')
 let fs = require('fs')
 let mako = require('mako')
 let path = require('path')
-let stat = require('mako-stat')
-let buffer = require('mako-buffer')
 
 chai.use(require('chai-as-promised'))
 let assert = chai.assert
@@ -268,7 +266,7 @@ describe('css plugin', function () {
       it('should be able to resolve all the specified extensions', function () {
         let entry = fixture('extensions/index.css')
         return mako()
-          .use([ stat('less'), buffer('less') ])
+          .use(buffer('less'))
           .postread('less', file => { file.type = 'css' })
           .use(plugins({ extensions: [ '.less' ] }))
           .build(entry)
@@ -281,7 +279,7 @@ describe('css plugin', function () {
       it('should be able to flatten the specified list', function () {
         let entry = fixture('extensions/index.css')
         return mako()
-          .use([ stat('less'), buffer('less') ])
+          .use(buffer('less'))
           .postread('less', file => { file.type = 'css' })
           .use(plugins({ extensions: '.less' }))
           .build(entry)
@@ -330,7 +328,6 @@ describe('css plugin', function () {
  */
 function plugins (options) {
   return [
-    stat('css'),
     buffer('css'),
     css(options)
   ]
@@ -355,4 +352,22 @@ function read (path) {
  */
 function expected (name, ext) {
   return read(fixture(name, `expected.${ext || 'css'}`)).trim()
+}
+
+/**
+ * Read files from disk.
+ *
+ * @param {Array} extensions  List of extensions to process.
+ * @return {Function} plugin
+ */
+function buffer (extensions) {
+  return function (mako) {
+    mako.read(extensions, function (file, build, done) {
+      fs.readFile(file.path, function (err, buf) {
+        if (err) return done(err)
+        file.contents = buf
+        done()
+      })
+    })
+  }
 }
