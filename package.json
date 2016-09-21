@@ -26,14 +26,14 @@
     "strip-extension": "^1.1.0"
   },
   "peerDependencies": {
-    "mako": "^0.13.0"
+    "mako": "^1.0.0"
   },
   "devDependencies": {
     "chai": "^3.2.0",
     "chai-as-promised": "^5.1.0",
     "istanbul": "^0.4.3",
     "istanbul-coveralls": "^1.0.3",
-    "mako": "^0.13.0",
+    "mako": "^1.0.0",
     "mocha": "^3.0.0",
     "normalize.css": "^4.1.1",
     "standard": "^8.0.0"
