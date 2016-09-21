@@ -1,14 +1,14 @@
 # mako-css
 
-> A mako plugin for working with CSS, using npm as a package manager. In addition to bundling the
+> A [mako][mako] plugin for working with CSS, using npm as a package manager. In addition to bundling the
 > CSS together, it also handles rewriting asset URLs.
 
-[![npm version](https://img.shields.io/npm/v/mako-css.svg)](https://www.npmjs.com/package/mako-css)
-[![build status](https://img.shields.io/travis/makojs/css.svg)](https://travis-ci.org/makojs/css)
-[![coverage](https://img.shields.io/coveralls/makojs/css.svg)](https://coveralls.io/github/makojs/css)
-[![npm dependencies](https://img.shields.io/david/makojs/css.svg)](https://david-dm.org/makojs/css)
-[![npm dev dependencies](https://img.shields.io/david/dev/makojs/css.svg)](https://david-dm.org/makojs/css#info=devDependencies)
-[![code style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](http://standardjs.com/)
+[![npm version][npm-badge]][npm]
+[![build status][travis-badge]][travis]
+[![coverage][coveralls-badge]][coveralls]
+[![npm dependencies][david-badge]][david]
+[![npm dev dependencies][david-dev-badge]][david-dev]
+[![code style][standard-badge]][standard]
 
 ## Purpose
 
@@ -37,3 +37,18 @@ array directly, but for core support of other types, please open an issue.
 
 An `Array` of extensions for font files that this plugin will interact with. You can add to this
 array directly, but for core support of other types, please open an issue.
+
+
+[mako]: https://github.com/makojs/core
+[coveralls]: https://coveralls.io/github/makojs/css
+[coveralls-badge]: https://img.shields.io/coveralls/makojs/css.svg
+[david]: https://david-dm.org/makojs/css
+[david-badge]: https://img.shields.io/david/makojs/css.svg
+[david-dev]: https://david-dm.org/makojs/css#info=devDependencies
+[david-dev-badge]: https://img.shields.io/david/dev/makojs/css.svg
+[npm]: https://www.npmjs.com/package/mako-css
+[npm-badge]: https://img.shields.io/npm/v/mako-css.svg
+[standard]: http://standardjs.com/
+[standard-badge]: https://img.shields.io/badge/code%20style-standard-brightgreen.svg
+[travis]: https://travis-ci.org/makojs/css
+[travis-badge]: https://img.shields.io/travis/makojs/css.svg
