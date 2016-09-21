@@ -1,6 +1,6 @@
 {
   "name": "mako-css",
-  "version": "0.17.1",
+  "version": "1.0.0",
   "description": "a mako plugin for assembling css files and their linked assets",
   "keywords": [
     "mako-plugin",
