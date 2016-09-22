@@ -8,6 +8,7 @@
 [![coverage][coveralls-badge]][coveralls]
 [![npm dependencies][david-badge]][david]
 [![npm dev dependencies][david-dev-badge]][david-dev]
+[![nsp status][nsp-badge]][nsp]
 [![code style][standard-badge]][standard]
 
 ## Purpose
@@ -39,16 +40,18 @@ An `Array` of extensions for font files that this plugin will interact with. You
 array directly, but for core support of other types, please open an issue.
 
 
-[mako]: https://github.com/makojs/core
-[coveralls]: https://coveralls.io/github/makojs/css
 [coveralls-badge]: https://img.shields.io/coveralls/makojs/css.svg
-[david]: https://david-dm.org/makojs/css
+[coveralls]: https://coveralls.io/github/makojs/css
 [david-badge]: https://img.shields.io/david/makojs/css.svg
-[david-dev]: https://david-dm.org/makojs/css#info=devDependencies
 [david-dev-badge]: https://img.shields.io/david/dev/makojs/css.svg
-[npm]: https://www.npmjs.com/package/mako-css
+[david-dev]: https://david-dm.org/makojs/css#info=devDependencies
+[david]: https://david-dm.org/makojs/css
+[mako]: https://github.com/makojs/core
 [npm-badge]: https://img.shields.io/npm/v/mako-css.svg
-[standard]: http://standardjs.com/
+[npm]: https://www.npmjs.com/package/mako-css
+[nsp-badge]: https://nodesecurity.io/orgs/mako/projects/d430f079-de6e-4f44-bd30-8516fa9cc1fb/badge
+[nsp]: https://nodesecurity.io/orgs/mako/projects/d430f079-de6e-4f44-bd30-8516fa9cc1fb
 [standard-badge]: https://img.shields.io/badge/code%20style-standard-brightgreen.svg
-[travis]: https://travis-ci.org/makojs/css
+[standard]: http://standardjs.com/
 [travis-badge]: https://img.shields.io/travis/makojs/css.svg
+[travis]: https://travis-ci.org/makojs/css
