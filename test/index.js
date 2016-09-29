@@ -2,7 +2,7 @@
 
 'use strict'
 
-let chai = require('chai')
+let assert = require('chai').assert
 let convert = require('convert-source-map')
 let css = require('..')
 let deps = require('@dominicbarnes/cssdeps')
@@ -10,8 +10,6 @@ let fs = require('fs')
 let mako = require('mako')
 let path = require('path')
 
-chai.use(require('chai-as-promised'))
-let assert = chai.assert
 let fixture = path.resolve.bind(path, __dirname, 'fixtures')
 
 describe('css plugin', function () {
