@@ -34,7 +34,7 @@
     "istanbul-coveralls": "^1.0.3",
     "mako": "^1.0.0",
     "mocha": "^3.0.0",
-    "normalize.css": "^4.1.1",
+    "normalize.css": "^5.0.0",
     "standard": "^8.0.0"
   },
   "scripts": {
