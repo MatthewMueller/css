@@ -21,4 +21,4 @@ deploy:
   on:
     tags: true
     repo: makojs/css
-    node: stable
+    node: 6
