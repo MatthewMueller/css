@@ -1,4 +1,9 @@
 
+1.0.1 / 2016-10-31
+==================
+
+  * fix: ensure relative paths resolve correctly for custom roots (#74)
+
 1.0.0 / 2016-09-21
 ==================
 
