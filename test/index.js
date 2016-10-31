@@ -259,6 +259,19 @@ describe('css plugin', function () {
       })
   })
 
+  it('should fix when root is different than CWD (fixes: #74)', () => {
+    let root = fixture('assets')
+    let entry = fixture('assets/index.css')
+
+    return mako({ root })
+      .use(plugins())
+      .build(entry)
+      .then(function (build) {
+        let entryFile = build.tree.findFile(entry)
+        assert.equal(entryFile.contents.toString(), 'html {\n  background-color: #338c00;\n  background-image: url("texture.png");\n}')
+      })
+  })
+
   context('with options', function () {
     context('.extensions', function () {
       it('should be able to resolve all the specified extensions', function () {

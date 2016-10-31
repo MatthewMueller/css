@@ -239,7 +239,7 @@ function doPack (file, mapping, sourceMaps, sourceRoot) {
     .use(rewrite(function (url) {
       if (!relativeRef(url)) return url
       let dep = mapping[this.position.source].deps[url]
-      return path.relative(file.dirname, dep)
+      return path.relative(file.dirname, path.resolve(file.base, dep))
     }))
 
   let results = css.toString({
