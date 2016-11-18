@@ -23,7 +23,8 @@ const defaults = {
   extensions: [],
   resolveOptions: null,
   sourceMaps: false,
-  sourceRoot: 'file://mako'
+  sourceRoot: 'file://mako',
+  rewrite: rewriter
 }
 
 // memory-efficient way of tracking mappings per-build
@@ -120,7 +121,7 @@ function plugin (options) {
       build.tree.removeFile(file)
     } else {
       debug('packing %s', utils.relative(file.path))
-      doPack(file, mapping, config.sourceMaps, config.sourceRoot)
+      doPack(file, build, mapping, config)
     }
   }
 
@@ -238,13 +239,14 @@ function findRoots (file) {
  * @param {String} sourceRoot  The sourceRoot config option
  * @return {Object}
  */
-function doPack (file, mapping, sourceMaps, sourceRoot) {
+function doPack (file, build, mapping, config) {
   let css = rework(file.contents.toString(), { source: id(file) })
     .use(customImport(mapping))
     .use(rewrite(function (url) {
       if (!relativeRef(url)) return url
       let dep = mapping[this.position.source].deps[url]
-      return path.relative(file.dirname, path.resolve(file.base, dep))
+      let filedep = build.tree.findFile(path.resolve(file.base, dep))
+      return config.rewrite(filedep, file)
     }))
 
   let results = css.toString({
@@ -253,10 +255,18 @@ function doPack (file, mapping, sourceMaps, sourceRoot) {
   })
 
   let map = convert.fromObject(results.map)
-  map.setProperty('sourceRoot', sourceRoot)
+  map.setProperty('sourceRoot', config.sourceRoot)
 
   file.contents = new Buffer(results.code)
-  file.sourceMap = sourceMaps ? map.toObject() : null
+  file.sourceMap = config.sourceMaps ? map.toObject() : null
+}
+
+/**
+ * Default rewrite function
+ */
+
+function rewriter (file, parent) {
+  return path.relative(parent.dirname, path.resolve(parent.base, file.relative))
 }
 
 /**
