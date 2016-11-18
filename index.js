@@ -64,11 +64,16 @@ function plugin (options) {
    */
   function * npm (file, build) {
     file.deps = Object.create(null)
-    var deps = cssdeps(file.contents.toString(), { source: file.relative }).filter(relativeRef)
+    var deps = cssdeps(file.contents.toString(), { source: file.relative })
     debug('%d dependencies found for %s:', deps.length, utils.relative(file.path))
     deps.forEach(dep => debug('> %s', dep))
 
     yield Promise.map(deps, function (dep) {
+      if (!relativeRef(dep)) {
+        file.deps[dep] = false
+        return
+      }
+
       return Promise.fromCallback(function (done) {
         let options = Object.assign({}, config.resolveOptions, {
           filename: file.path,

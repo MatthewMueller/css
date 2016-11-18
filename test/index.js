@@ -217,6 +217,17 @@ describe('css plugin', function () {
       })
   })
 
+  it('should ignore imports of absolute urls', function () {
+    let entry = fixture('import-http/index.css')
+    return mako()
+      .use(plugins())
+      .build(entry)
+      .then(function (build) {
+        let file = build.tree.findFile(entry)
+        assert.strictEqual(file.contents.toString().trim(), expected('import-http'))
+      })
+  })
+
   it('should ignore data-uris', function () {
     let entry = fixture('datauri/index.css')
     return mako()
